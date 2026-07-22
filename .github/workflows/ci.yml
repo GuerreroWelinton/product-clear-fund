@@ -1,0 +1,55 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+    paths:
+      - "clear-fund/**"
+      - ".github/workflows/ci.yml"
+  pull_request:
+    paths:
+      - "clear-fund/**"
+      - ".github/workflows/ci.yml"
+
+defaults:
+  run:
+    working-directory: clear-fund
+
+jobs:
+  verify:
+    runs-on: ubuntu-latest
+    env:
+      # Prisma loads prisma.config.ts, which reads DATABASE_URL. CI does not
+      # connect to a real database for lint/typecheck/test/build, so a dummy
+      # value is enough to satisfy config loading and `prisma generate`.
+      DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci?schema=public"
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+        with:
+          package_json_file: clear-fund/package.json
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: "24.16.0"
+          cache: pnpm
+          cache-dependency-path: clear-fund/pnpm-lock.yaml
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Generate Prisma client
+        run: pnpm exec prisma generate
+
+      - name: Lint
+        run: pnpm run lint
+
+      - name: Typecheck
+        run: pnpm run typecheck
+
+      - name: Unit and integration tests
+        run: pnpm test
+
+      - name: Build
+        run: pnpm run build
