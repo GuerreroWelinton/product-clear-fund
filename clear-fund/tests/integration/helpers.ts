@@ -12,7 +12,7 @@ export { prisma };
 // sequences. Table names are the @@map-ed physical names.
 export async function resetDb(): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "session", "account", "user", "verification" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "cash_fund_user", "cash_fund", "session", "account", "user", "verification" RESTART IDENTITY CASCADE',
   );
 }
 
