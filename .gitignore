@@ -1,0 +1,12 @@
+# OS files
+.DS_Store
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Editor cruft
+*.swp
+*~
+
+# Agent / session tooling
+.atl/
