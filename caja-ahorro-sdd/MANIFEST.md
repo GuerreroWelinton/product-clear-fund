@@ -1,6 +1,6 @@
 # Manifiesto de archivos
 
-Total: 140 archivos Markdown.
+Total: 143 archivos Markdown.
 
 | Archivo | Propósito |
 |---|---|
@@ -23,6 +23,9 @@ Total: 140 archivos Markdown.
 | `01-foundation/adrs/ADR-004-immutable-ledger.md` | Documento transversal o de referencia. |
 | `01-foundation/adrs/ADR-005-no-docker-mvp.md` | Documento transversal o de referencia. |
 | `01-foundation/adrs/ADR-006-snapshots.md` | Documento transversal o de referencia. |
+| `01-foundation/adrs/ADR-007-auth-module-name.md` | Decisión de arquitectura (F01). |
+| `01-foundation/adrs/ADR-008-defer-audit-to-f23.md` | Decisión de arquitectura (F01). |
+| `01-foundation/adrs/ADR-009-treasurer-password-input.md` | Decisión de arquitectura (F01). |
 | `02-domain/DATABASE_CONSTRAINTS.md` | Documento transversal o de referencia. |
 | `02-domain/DOMAIN_GLOSSARY.md` | Documento transversal o de referencia. |
 | `02-domain/DOMAIN_MODEL.md` | Documento transversal o de referencia. |
