@@ -1,5 +1,13 @@
 # Checksums SHA-256
 
+> **Nota:** Estos checksums corresponden al paquete de especificación tal como
+> fue entregado originalmente. La spec es un documento vivo (por ejemplo, la
+> matriz de trazabilidad y los `tasks.md` se actualizan durante el desarrollo),
+> por lo que su integridad y su historial de cambios se rastrean con git desde
+> la entrega inicial. Este manifiesto **no se regenera** en cada edición; sirve
+> como sello del entregable original. Solo debería recalcularse (idealmente de
+> forma automatizada) si la spec se redistribuye como paquete sellado fuera de git.
+
 ```text
 e679567294726ed72eb34f5f7b77ca5114971c73ffbd05eafad9620d848b29f1  00-governance/DEFINITION_OF_DONE.md
 af800fb4bb1526f7bd1375bf198991fdbbe95718366a0821f9dfeba98d52d75e  00-governance/DEFINITION_OF_READY.md
