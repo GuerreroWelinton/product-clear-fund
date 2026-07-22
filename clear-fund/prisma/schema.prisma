@@ -27,6 +27,8 @@ model User {
   sessions      Session[]
   accounts      Account[]
 
+  cashFundAssignments CashFundUser[]
+
   @@unique([email])
   @@map("user")
 }
@@ -78,4 +80,70 @@ model Verification {
 
   @@index([identifier])
   @@map("verification")
+}
+
+// F02 - Cash fund lifecycle.
+enum CashFundStatus {
+  DRAFT
+  ACTIVE
+  INACTIVE
+}
+
+// F02 - A cash fund (caja de ahorro): its structural parameters and mutable
+// operational config. Each fund operates in USD with its own balance,
+// numbering, loans and closings (BR-F02-001).
+model CashFund {
+  id   String @id @default(uuid())
+  name String
+
+  // Structural parameters, locked once the fund is activated (BR-F02-002/004).
+  logoKey             String?
+  phrase              String?
+  currency            String    @default("USD")
+  monthlySavingAmount Decimal   @db.Decimal(18, 2)
+  officialStartDate   DateTime? @db.Date
+
+  status CashFundStatus @default(DRAFT)
+
+  // Consecutive member number per fund; the "first number" seam for F05.
+  nextMemberNumber Int @default(1)
+
+  // Operational config, editable while ACTIVE (BR-F02-005).
+  recommendedDay   Int
+  maximumDay       Int
+  maxAdvanceMonths Int
+  riskThreshold    Int
+
+  // Lifecycle tracking; deactivatedAt anchors the reactivation recovery (F06 seam, BR-F02-007).
+  activatedAt   DateTime?
+  deactivatedAt DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  assignments CashFundUser[]
+
+  @@index([status])
+  @@map("cash_fund")
+}
+
+// F02 creates this table (grouped with CashFund in PRISMA_SCHEMA_PLAN.md) and
+// reads active assignments to authorize treasurer config edits (FR-F02-002).
+// Assignment management (assign/revoke) belongs to F03.
+model CashFundUser {
+  id         String @id @default(uuid())
+  cashFundId String
+  userId     String
+  status     String @default("ACTIVE") // ACTIVE | REVOKED
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  cashFund CashFund @relation(fields: [cashFundId], references: [id], onDelete: Cascade)
+  user     User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([cashFundId, userId])
+  @@index([userId])
+  @@index([cashFundId])
+  @@map("cash_fund_user")
 }

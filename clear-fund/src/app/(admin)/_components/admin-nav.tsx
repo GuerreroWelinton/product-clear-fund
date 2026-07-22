@@ -14,6 +14,7 @@ interface AdminNavProps {
 const LINKS = [
   { href: "/dashboard", label: "Dashboard", superAdminOnly: false },
   { href: "/users", label: "Usuarios", superAdminOnly: true },
+  { href: "/cash-funds", label: "Cajas", superAdminOnly: false },
 ];
 
 export function AdminNav({ isSuperAdmin, userName }: AdminNavProps) {
