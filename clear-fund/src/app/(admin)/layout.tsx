@@ -1,7 +1,9 @@
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
-import { auth } from "@/lib/auth";
+import { auth, ROLES } from "@/lib/auth";
+
+import { AdminNav } from "./_components/admin-nav";
 
 // Server-side guard for every admin route: no session -> back to login.
 export default async function AdminLayout({
@@ -14,5 +16,15 @@ export default async function AdminLayout({
     redirect("/login");
   }
 
-  return <>{children}</>;
+  return (
+    <div className="flex min-h-full flex-col">
+      <AdminNav
+        isSuperAdmin={session.user.role === ROLES.SUPER_ADMIN}
+        userName={session.user.name}
+      />
+      <main className="mx-auto w-full max-w-5xl flex-1 px-4 py-8">
+        {children}
+      </main>
+    </div>
+  );
 }
