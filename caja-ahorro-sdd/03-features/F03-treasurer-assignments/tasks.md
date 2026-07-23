@@ -10,7 +10,7 @@
 - [x] Revisar `spec.md` y resolver contradicciones. Implementa todos los requisitos `FR-F03-*`.
 - [x] Confirmar dependencias: F01, F02.
 - [x] Diseñar DTOs y códigos de error. (`TreasurerAssignmentDto`, `FundTreasurerDto`, `F03_ERROR_CODES`.)
-- [x] Actualizar la matriz de trazabilidad. (F03 → "En validación".)
+- [x] Actualizar la matriz de trazabilidad. (F03 → "Completada".)
 
 ## 2. Base de datos
 
@@ -46,7 +46,7 @@
 ## 6. Verificación
 
 - [x] Implementar todos los escenarios de `acceptance.md`. (`tests/integration/treasurer-assignments.test.ts`: AC-F03-001/002/003 + idempotencia + BR-F03-001.)
-- [x] Ejecutar lint, typecheck y pruebas. (lint ✓, typecheck ✓, unit 126 ✓, integración 13 ✓.)
-- [x] Ejecutar E2E del flujo principal. (Cubierto a nivel integración con sesiones reales de Better Auth; sin runner E2E de navegador en el MVP.)
-- [ ] Realizar prueba manual con datos representativos. (Pendiente de validación funcional del responsable.)
+- [x] Ejecutar lint, typecheck y pruebas. (lint ✓, typecheck ✓, unit 127 ✓, integración 14 ✓.)
+- [~] Ejecutar E2E del flujo principal. (Diferido: sin runner Playwright configurado; el flujo principal está cubierto por tests de integración con sesiones reales.)
+- [x] Realizar prueba manual con datos representativos. (Validada manualmente por el responsable: asignar/retirar tesoreros y visibilidad del tesorero OK.)
 - [x] Actualizar documentación y marcar la feature como completada. (ADR-012, trazabilidad, este `tasks.md`.)

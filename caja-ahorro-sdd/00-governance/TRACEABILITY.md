@@ -5,8 +5,8 @@ Mantener esta tabla durante el desarrollo.
 | Feature | Requisitos | Plan | Tareas | Aceptación | Estado |
 |---|---:|---:|---:|---:|---|
 | F01 | spec.md | plan.md | tasks.md | acceptance.md | Completada |
-| F02 | spec.md | plan.md | tasks.md | acceptance.md | En validación |
-| F03 | spec.md | plan.md | tasks.md | acceptance.md | En validación |
+| F02 | spec.md | plan.md | tasks.md | acceptance.md | Completada |
+| F03 | spec.md | plan.md | tasks.md | acceptance.md | Completada |
 | F04 | spec.md | plan.md | tasks.md | acceptance.md | Propuesta |
 | F05 | spec.md | plan.md | tasks.md | acceptance.md | Propuesta |
 | F06 | spec.md | plan.md | tasks.md | acceptance.md | Propuesta |

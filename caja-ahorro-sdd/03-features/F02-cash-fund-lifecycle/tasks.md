@@ -9,7 +9,7 @@
 - [x] Revisar `spec.md` y resolver contradicciones. Implementa todos los requisitos `FR-F02-*`.
 - [x] Confirmar dependencias: F01.
 - [x] Diseñar DTOs y códigos de error. (`CashFundDto`, `F02_ERROR_CODES` alineados a `ERROR_CATALOG.md`.)
-- [x] Actualizar la matriz de trazabilidad. (F02 → "En desarrollo".)
+- [x] Actualizar la matriz de trazabilidad. (F02 → "Completada".)
 
 ## 2. Base de datos
 
@@ -40,12 +40,12 @@
 - [x] Crear páginas y componentes. (`/cash-funds` + diálogos crear/editar/config + acciones de fila. Formularios crear/editar-borrador alineados: en borrador se editan los 4 campos de config + fecha de inicio.)
 - [x] Añadir estados de carga, vacío, error y confirmación. (`useTransition`, empty state, toasts de error, `AlertDialog` para activar/desactivar.)
 - [x] Validar accesibilidad de formularios. (`htmlFor` en todos los labels; ayuda contextual por clic/tap (Popover) accesible por teclado en campos complejos vía `FieldLabel` — ADR-011.)
-- [~] Verificar escritorio y móvil. (Tabla con `overflow-x-auto`; revisión visual manual pendiente.)
+- [x] Verificar escritorio y móvil. (Tabla con `overflow-x-auto`; validada manualmente por el responsable en escritorio y móvil.)
 
 ## 6. Verificación
 
 - [~] Implementar todos los escenarios de `acceptance.md`. (AC-F02-001 y AC-F02-002 en integración; **AC-F02-003 diferido a F06**, `it.todo`, ADR-010.)
 - [x] Ejecutar lint, typecheck y pruebas. (100 unit + 8 integración verdes; lint/typecheck/build limpios.)
-- [ ] Ejecutar E2E del flujo principal. (Pendiente: no se escribió E2E Playwright; cubierto por integración, igual que F01.)
-- [ ] Realizar prueba manual con datos representativos. (Pendiente: revisión visual del responsable.)
-- [~] Actualizar documentación y marcar la feature como completada. (ADR-010 + trazabilidad + este archivo; cierre final tras revisión manual/PR.)
+- [~] Ejecutar E2E del flujo principal. (Diferido: sin runner Playwright configurado; el flujo principal está cubierto por tests de integración con sesiones reales.)
+- [x] Realizar prueba manual con datos representativos. (Validada manualmente por el responsable.)
+- [x] Actualizar documentación y marcar la feature como completada. (ADR-010 + trazabilidad + este archivo; cerrada tras validación manual.)
