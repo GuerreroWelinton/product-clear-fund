@@ -150,4 +150,30 @@ describe("F02 cash fund lifecycle (integration)", () => {
       ),
     ).rejects.toMatchObject({ code: F02_ERROR_CODES.UNAUTHORIZED });
   });
+
+  // Regression: officialStartDate is a `DateTime @db.Date` column. Passing the
+  // validated date-only string straight to Prisma throws
+  // "Expected ISO-8601 DateTime" (surfaced as F02_OPERATION_FAILED). The
+  // use cases must normalize it to a Date at the boundary. This is the only
+  // test that exercises a non-null officialStartDate against a real database.
+  it("persists officialStartDate on create and draft edit (Prisma @db.Date boundary)", async () => {
+    const ctx = await adminContext();
+
+    const fund = await createCashFund(
+      { ...BASE_FUND, officialStartDate: "2026-08-01" },
+      ctx,
+    );
+    expect(fund.officialStartDate?.slice(0, 10)).toBe("2026-08-01");
+
+    const persisted = await prisma.cashFund.findUnique({
+      where: { id: fund.id },
+    });
+    expect(persisted?.officialStartDate).not.toBeNull();
+
+    const updated = await updateCashFundDraft(
+      { cashFundId: fund.id, officialStartDate: "2026-09-15" },
+      ctx,
+    );
+    expect(updated.officialStartDate?.slice(0, 10)).toBe("2026-09-15");
+  });
 });

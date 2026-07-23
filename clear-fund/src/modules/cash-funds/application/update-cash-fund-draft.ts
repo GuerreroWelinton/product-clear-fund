@@ -4,6 +4,7 @@ import { toCashFundDto, type CashFundDto } from "../domain/dto";
 import { CashFundError, F02_ERROR_CODES, mapUnexpectedError } from "../domain/errors";
 import {
   canEditFixedFee,
+  toDbDate,
   validateDayConfig,
   validatePositiveAmount,
 } from "../domain/rules";
@@ -85,7 +86,7 @@ export async function updateCashFundDraft(
           ? { monthlySavingAmount: parsed.data.monthlySavingAmount }
           : {}),
         ...(parsed.data.officialStartDate !== undefined
-          ? { officialStartDate: parsed.data.officialStartDate }
+          ? { officialStartDate: toDbDate(parsed.data.officialStartDate) }
           : {}),
         recommendedDay,
         maximumDay,
