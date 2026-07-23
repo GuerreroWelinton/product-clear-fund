@@ -6,6 +6,7 @@ import {
   canEditOperationalConfig,
   canTransition,
   hasFirstNumber,
+  toDbDate,
   validateDayConfig,
   validatePositiveAmount,
 } from "./rules";
@@ -144,5 +145,18 @@ describe("validatePositiveAmount", () => {
     expect(() => validatePositiveAmount("abc")).toThrow(
       expect.objectContaining({ code: F02_ERROR_CODES.INVALID_INPUT }),
     );
+  });
+});
+
+describe("toDbDate", () => {
+  it("returns null for null or undefined", () => {
+    expect(toDbDate(null)).toBeNull();
+    expect(toDbDate(undefined)).toBeNull();
+  });
+
+  it("converts a YYYY-MM-DD string to a UTC-midnight Date (Prisma @db.Date safe)", () => {
+    const date = toDbDate("2026-08-01");
+    expect(date).toBeInstanceOf(Date);
+    expect(date?.toISOString()).toBe("2026-08-01T00:00:00.000Z");
   });
 });

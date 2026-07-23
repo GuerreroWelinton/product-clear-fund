@@ -90,3 +90,14 @@ export function validatePositiveAmount(amount: string): void {
     );
   }
 }
+
+// officialStartDate crosses the module boundary as a date-only string
+// (YYYY-MM-DD), but Prisma's `DateTime @db.Date` column rejects a bare date
+// string ("premature end of input. Expected ISO-8601 DateTime.") — it needs a
+// Date or a full ISO-8601 datetime. Normalize to UTC midnight at the boundary.
+export function toDbDate(value: string | null | undefined): Date | null {
+  if (value === null || value === undefined) {
+    return null;
+  }
+  return new Date(`${value}T00:00:00.000Z`);
+}

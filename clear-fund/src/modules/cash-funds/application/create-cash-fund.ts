@@ -2,7 +2,7 @@ import { prisma } from "@/lib/db";
 
 import { toCashFundDto, type CashFundDto } from "../domain/dto";
 import { CashFundError, F02_ERROR_CODES, mapUnexpectedError } from "../domain/errors";
-import { validateDayConfig, validatePositiveAmount } from "../domain/rules";
+import { toDbDate, validateDayConfig, validatePositiveAmount } from "../domain/rules";
 import { createCashFundSchema, type CreateCashFundInput } from "../schemas";
 import { requireSuperAdmin } from "./authorize";
 import type { RequestContext } from "./context";
@@ -35,7 +35,7 @@ export async function createCashFund(
         logoKey: parsed.data.logoKey ?? null,
         phrase: parsed.data.phrase ?? null,
         monthlySavingAmount: parsed.data.monthlySavingAmount,
-        officialStartDate: parsed.data.officialStartDate ?? null,
+        officialStartDate: toDbDate(parsed.data.officialStartDate),
         recommendedDay: parsed.data.recommendedDay,
         maximumDay: parsed.data.maximumDay,
         maxAdvanceMonths: parsed.data.maxAdvanceMonths,
