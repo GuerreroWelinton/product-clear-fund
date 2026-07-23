@@ -83,7 +83,7 @@ export function OperationalConfigDialog({
             <div className="flex flex-col gap-2">
               <FieldLabel
                 htmlFor="config-recommended-day"
-                hint="Día del mes sugerido para pagar la cuota y evitar mora."
+                hint="Día del mes sugerido para pagar. Hasta esta fecha la cuota está en verde."
               >
                 Día recomendado
               </FieldLabel>
@@ -101,7 +101,7 @@ export function OperationalConfigDialog({
             <div className="flex flex-col gap-2">
               <FieldLabel
                 htmlFor="config-maximum-day"
-                hint="Último día del mes para pagar antes de que se registre un evento de riesgo."
+                hint="Fecha límite de pago. Pasado este día la cuota pasa a rojo y se registra un evento de riesgo."
               >
                 Día máximo
               </FieldLabel>
