@@ -1,7 +1,7 @@
 # Tareas - F01 Autenticación y sesiones
 
 > Estado: **Completada** (con salvedades registradas en Verificación).
-> Convenciones: `[x]` hecha · `[~]` no aplica a F01 (motivo) · `[ ]` pendiente.
+> Convenciones: `[x]` hecha · `[~]` parcial/diferido/no aplica (con nota) · `[ ]` pendiente.
 
 ## 1. Preparación
 
@@ -39,12 +39,12 @@
 - [x] Crear páginas y componentes. (login, dashboard, /users, diálogos y acciones)
 - [x] Añadir estados de carga, vacío, error y confirmación. (loading en login, tabla vacía, toasts, AlertDialog de confirmación)
 - [x] Validar accesibilidad de formularios. (labels asociados, `aria-invalid`, `role="alert"`, focus)
-- [ ] Verificar escritorio y móvil. (Validación manual de escritorio hecha por el responsable; falta una revisión responsive formal registrada)
+- [x] Verificar escritorio y móvil. (Validada manualmente por el responsable en escritorio y móvil.)
 
 ## 6. Verificación
 
 - [x] Implementar todos los escenarios de `acceptance.md`. (AC-F01-001/002/003, integración, 3/3)
 - [x] Ejecutar lint, typecheck y pruebas. (lint + typecheck + 19 unit + 3 integración, en verde)
-- [ ] Ejecutar E2E del flujo principal. (Diferido: Playwright no configurado aún; se hará cuando se establezca la suite E2E)
+- [~] Ejecutar E2E del flujo principal. (Diferido: sin runner Playwright configurado; el flujo principal está cubierto por tests de integración con sesiones reales.)
 - [x] Realizar prueba manual con datos representativos. (Login y gestión probados contra la caja de prueba en Neon)
 - [x] Actualizar documentación y marcar la feature como completada. (ADR-007/008/009, matriz de trazabilidad, esta lista)

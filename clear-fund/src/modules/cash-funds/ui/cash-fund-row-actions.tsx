@@ -31,6 +31,7 @@ import {
 import type { CashFundDto } from "@/modules/cash-funds/domain/dto";
 import { EditCashFundDraftDialog } from "@/modules/cash-funds/ui/edit-cash-fund-draft-dialog";
 import { OperationalConfigDialog } from "@/modules/cash-funds/ui/operational-config-dialog";
+import { ManageTreasurersDialog } from "@/modules/treasurer-assignments/ui/manage-treasurers-dialog";
 
 interface CashFundRowActionsProps {
   fund: CashFundDto;
@@ -47,6 +48,7 @@ export function CashFundRowActions({
   const [pending, startTransition] = useTransition();
   const [editOpen, setEditOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
+  const [manageOpen, setManageOpen] = useState(false);
   const [confirmActivate, setConfirmActivate] = useState(false);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
 
@@ -68,9 +70,15 @@ export function CashFundRowActions({
     isSuperAdmin && (fund.status === "DRAFT" || fund.status === "INACTIVE");
   const canDeactivate = isSuperAdmin && fund.status === "ACTIVE";
   const isReactivate = fund.status === "INACTIVE";
+  // FR-F03-001: only the Super Admin manages treasurer assignments.
+  const canManageTreasurers = isSuperAdmin;
 
   const hasAnyAction =
-    canEditDraft || canOpenConfig || canActivate || canDeactivate;
+    canEditDraft ||
+    canOpenConfig ||
+    canManageTreasurers ||
+    canActivate ||
+    canDeactivate;
 
   if (!hasAnyAction) {
     return <span className="text-muted-foreground text-xs">—</span>;
@@ -98,6 +106,11 @@ export function CashFundRowActions({
           {canOpenConfig ? (
             <DropdownMenuItem onClick={() => setConfigOpen(true)}>
               Configuración operativa
+            </DropdownMenuItem>
+          ) : null}
+          {canManageTreasurers ? (
+            <DropdownMenuItem onClick={() => setManageOpen(true)}>
+              Gestionar tesoreros
             </DropdownMenuItem>
           ) : null}
           {canActivate ? (
@@ -129,6 +142,15 @@ export function CashFundRowActions({
           fund={fund}
           open={configOpen}
           onOpenChange={setConfigOpen}
+        />
+      ) : null}
+
+      {canManageTreasurers ? (
+        <ManageTreasurersDialog
+          cashFundId={fund.id}
+          cashFundName={fund.name}
+          open={manageOpen}
+          onOpenChange={setManageOpen}
         />
       ) : null}
 

@@ -15,6 +15,7 @@ import { prisma } from "@/lib/db";
 import { CashFundRowActions } from "@/modules/cash-funds/ui/cash-fund-row-actions";
 import { CreateCashFundDialog } from "@/modules/cash-funds/ui/create-cash-fund-dialog";
 import { toCashFundDto, type CashFundStatus } from "@/modules/cash-funds/domain/dto";
+import { listAssignedCashFunds } from "@/modules/treasurer-assignments/application";
 
 const STATUS_LABELS: Record<CashFundStatus, string> = {
   DRAFT: "Borrador",
@@ -55,13 +56,13 @@ export default async function CashFundsPage() {
 
   const isSuperAdmin = session.user.role === ROLES.SUPER_ADMIN;
 
+  // FR-F03-002 / BR-F03-005: a treasurer sees only their ACTIVE-assigned funds.
+  // The treasurer-assignments module owns this query (single source of truth).
   let assignedFundIds = new Set<string>();
   if (!isSuperAdmin) {
-    const assignments = await prisma.cashFundUser.findMany({
-      where: { userId: session.user.id, status: "ACTIVE" },
-      select: { cashFundId: true },
-    });
-    assignedFundIds = new Set(assignments.map((a) => a.cashFundId));
+    assignedFundIds = new Set(
+      await listAssignedCashFunds({ headers: requestHeaders }),
+    );
   }
 
   const rows = await prisma.cashFund.findMany({
