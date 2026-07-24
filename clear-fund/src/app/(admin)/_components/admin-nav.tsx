@@ -25,6 +25,10 @@ const LINKS = [
   { href: "/dashboard", label: "Dashboard", superAdminOnly: false },
   { href: "/users", label: "Usuarios", superAdminOnly: true },
   { href: "/cash-funds", label: "Cajas", superAdminOnly: false },
+  // FR-F23-002: a treasurer also reads the audit log, scoped to their funds, so
+  // this is not Super-Admin-only even though UI_INFORMATION_ARCHITECTURE.md only
+  // sketches it under the Super Admin navigation.
+  { href: "/audit", label: "Auditoría", superAdminOnly: false },
 ];
 
 export function AdminNav({ isSuperAdmin, userName }: AdminNavProps) {
