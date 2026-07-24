@@ -6,6 +6,7 @@ Una feature puede entrar a desarrollo cuando:
 - Tiene requisitos funcionales identificados.
 - Sus reglas de negocio no contradicen otras features.
 - Sus dependencias anteriores están completadas o simuladas mediante contratos estables.
+- Se revisó si una feature anterior le difirió escenarios de aceptación o costuras, y esa deuda quedó incorporada a su alcance. Los diferimientos se registran en el ADR de la feature que difirió.
 - El modelo de autorización está definido.
 - Se conocen las transacciones y restricciones de integridad necesarias.
 - Tiene criterios de aceptación verificables.

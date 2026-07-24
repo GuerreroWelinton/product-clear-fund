@@ -26,6 +26,6 @@ Mantener esta tabla durante el desarrollo.
 | F20 | spec.md | plan.md | tasks.md | acceptance.md | Propuesta |
 | F21 | spec.md | plan.md | tasks.md | acceptance.md | Propuesta |
 | F22 | spec.md | plan.md | tasks.md | acceptance.md | Propuesta |
-| F23 | spec.md | plan.md | tasks.md | acceptance.md | Propuesta |
+| F23 | spec.md | plan.md | tasks.md | acceptance.md | Implementada, pendiente de validación manual |
 | F24 | spec.md | plan.md | tasks.md | acceptance.md | Propuesta |
 | F25 | spec.md | plan.md | tasks.md | acceptance.md | Futuro |
