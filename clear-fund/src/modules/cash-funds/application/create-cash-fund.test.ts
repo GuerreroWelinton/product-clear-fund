@@ -1,9 +1,10 @@
 import { Decimal } from "decimal.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getSession, create } = vi.hoisted(() => ({
+const { getSession, create, auditCreate } = vi.hoisted(() => ({
   getSession: vi.fn(),
   create: vi.fn(),
+  auditCreate: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -11,9 +12,20 @@ vi.mock("@/lib/auth", () => ({
   ROLES: { SUPER_ADMIN: "SUPER_ADMIN", TREASURER: "TREASURER" },
 }));
 
-vi.mock("@/lib/db", () => ({
-  prisma: { cashFund: { create } },
-}));
+vi.mock("@/lib/db", () => {
+  const client = {
+    cashFund: { create },
+    auditEvent: { create: auditCreate },
+  };
+  return {
+    // $transaction runs the callback against the same mock client, so the F23
+    // audit write performed inside the transaction is observable here.
+    prisma: {
+      ...client,
+      $transaction: (fn: (tx: typeof client) => unknown) => fn(client),
+    },
+  };
+});
 
 import { F02_ERROR_CODES } from "../domain/errors";
 import { createCashFund } from "./create-cash-fund";
@@ -54,6 +66,7 @@ const createdRow = {
 beforeEach(() => {
   vi.clearAllMocks();
   getSession.mockResolvedValue(superAdminSession);
+  auditCreate.mockResolvedValue({ id: "event-1" });
 });
 
 describe("createCashFund", () => {
@@ -78,6 +91,35 @@ describe("createCashFund", () => {
       monthlySavingAmount: "150",
     });
     expect(typeof dto.monthlySavingAmount).toBe("string");
+  });
+
+  it("records a CASH_FUND_CREATED audit event with the actor (F23, ADR-013)", async () => {
+    create.mockResolvedValue(createdRow);
+
+    await createCashFund(validInput, { headers });
+
+    expect(auditCreate).toHaveBeenCalledTimes(1);
+    const { data } = auditCreate.mock.calls[0]![0];
+    expect(data).toMatchObject({
+      actorId: "admin-1",
+      actorRole: "SUPER_ADMIN",
+      action: "CASH_FUND_CREATED",
+      entityType: "CASH_FUND",
+      entityId: "fund-1",
+      cashFundId: "fund-1",
+    });
+    // Money reaches the log as a decimal string, never a number.
+    expect(data.changes.monthlySavingAmount).toEqual({
+      previous: null,
+      next: "150",
+    });
+  });
+
+  it("does not record an audit event when the operation fails", async () => {
+    await expect(
+      createCashFund({ ...validInput, name: "" }, { headers }),
+    ).rejects.toBeTruthy();
+    expect(auditCreate).not.toHaveBeenCalled();
   });
 
   it("rejects invalid input with F02_INVALID_INPUT and never calls Prisma", async () => {

@@ -1,5 +1,16 @@
 import { ROLES } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { AUDIT_ACTIONS, AUDIT_ENTITY_TYPES } from "@/modules/audit/domain/event-types";
+import {
+  buildChangeSet,
+  buildCreationChangeSet,
+} from "@/modules/audit/domain/rules";
+// Concrete path, not the module barrel: the barrel pulls in the audit read side,
+// which depends back on this module (import cycle).
+import {
+  auditActorFromSession,
+  recordAuditEvent,
+} from "@/modules/audit/application/record-audit-event";
 
 import { toAssignmentDto, type TreasurerAssignmentDto } from "../domain/dto";
 import { AssignmentError, F03_ERROR_CODES, mapUnexpectedError } from "../domain/errors";
@@ -36,7 +47,7 @@ export async function assignTreasurer(
     );
   }
 
-  await requireSuperAdmin(ctx);
+  const session = await requireSuperAdmin(ctx);
 
   const { cashFundId, userId } = parsed.data;
 
@@ -76,19 +87,57 @@ export async function assignTreasurer(
     const action = resolveAssignAction(existing);
 
     if (action === "NOOP") {
+      // No state changed, so there is nothing to audit (ADR-013): recording a
+      // no-op would contradict BR-F23-002 and fill the log with noise.
       return toAssignmentDto(existing!);
     }
+
+    // F23: the audit event is written INSIDE the same transaction as the change
+    // it describes, so a confirmed assignment can never lack its event (ADR-013).
+    const actor = auditActorFromSession(session);
+
     if (action === "REACTIVATE") {
-      const reactivated = await prisma.cashFundUser.update({
-        where: { cashFundId_userId: { cashFundId, userId } },
-        data: { status: "ACTIVE" },
+      const reactivated = await prisma.$transaction(async (tx) => {
+        const row = await tx.cashFundUser.update({
+          where: { cashFundId_userId: { cashFundId, userId } },
+          data: { status: "ACTIVE" },
+        });
+        await recordAuditEvent(tx, {
+          actor,
+          action: AUDIT_ACTIONS.TREASURER_ASSIGNED,
+          entityType: AUDIT_ENTITY_TYPES.CASH_FUND_USER,
+          entityId: row.id,
+          cashFundId,
+          // Only `status` is diffed: cashFundId and userId did not change, and
+          // listing them would report a false change (null -> value).
+          changes: buildChangeSet(
+            { status: existing!.status },
+            { status: row.status },
+          ),
+        });
+        return row;
       });
       return toAssignmentDto(reactivated);
     }
 
     try {
-      const created = await prisma.cashFundUser.create({
-        data: { cashFundId, userId, status: "ACTIVE" },
+      const created = await prisma.$transaction(async (tx) => {
+        const row = await tx.cashFundUser.create({
+          data: { cashFundId, userId, status: "ACTIVE" },
+        });
+        await recordAuditEvent(tx, {
+          actor,
+          action: AUDIT_ACTIONS.TREASURER_ASSIGNED,
+          entityType: AUDIT_ENTITY_TYPES.CASH_FUND_USER,
+          entityId: row.id,
+          cashFundId,
+          changes: buildCreationChangeSet({
+            cashFundId,
+            userId,
+            status: row.status,
+          }),
+        });
+        return row;
       });
       return toAssignmentDto(created);
     } catch (error) {
@@ -96,6 +145,8 @@ export async function assignTreasurer(
       // so the unique (cashFundId, userId) index rejects this one with P2002.
       // The pair IS now assigned (ACTIVE) — re-read and return it so the call
       // stays idempotent instead of surfacing a spurious failure (ADR-012).
+      // No audit event: the winning call recorded its own, and this call changed
+      // nothing.
       if (isUniqueViolation(error)) {
         const row = await prisma.cashFundUser.findUnique({
           where: { cashFundId_userId: { cashFundId, userId } },

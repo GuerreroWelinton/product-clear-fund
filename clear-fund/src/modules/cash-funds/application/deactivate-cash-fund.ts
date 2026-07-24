@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { buildChangeSet } from "@/modules/audit/domain/rules";
 
 import { toCashFundDto, type CashFundDto } from "../domain/dto";
 import { CashFundError, F02_ERROR_CODES, mapUnexpectedError } from "../domain/errors";
@@ -7,6 +8,11 @@ import {
   deactivateCashFundSchema,
   type DeactivateCashFundInput,
 } from "../schemas";
+import {
+  AUDIT_ACTIONS,
+  cashFundAuditSnapshot,
+  recordCashFundEvent,
+} from "./audit";
 import { requireSuperAdmin } from "./authorize";
 import type { RequestContext } from "./context";
 
@@ -24,7 +30,7 @@ export async function deactivateCashFund(
     );
   }
 
-  await requireSuperAdmin(ctx);
+  const session = await requireSuperAdmin(ctx);
 
   try {
     const fund = await prisma.cashFund.findUnique({
@@ -44,9 +50,22 @@ export async function deactivateCashFund(
       );
     }
 
-    const updated = await prisma.cashFund.update({
-      where: { id: fund.id },
-      data: { status: "INACTIVE", deactivatedAt: new Date() },
+    // F23: the audit event commits with the transition (ADR-013).
+    const updated = await prisma.$transaction(async (tx) => {
+      const row = await tx.cashFund.update({
+        where: { id: fund.id },
+        data: { status: "INACTIVE", deactivatedAt: new Date() },
+      });
+      await recordCashFundEvent(tx, {
+        session,
+        action: AUDIT_ACTIONS.CASH_FUND_DEACTIVATED,
+        cashFundId: row.id,
+        changes: buildChangeSet(
+          cashFundAuditSnapshot(fund),
+          cashFundAuditSnapshot(row),
+        ),
+      });
+      return row;
     });
     return toCashFundDto(updated);
   } catch (error) {

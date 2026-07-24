@@ -1,10 +1,17 @@
 import { auth } from "@/lib/auth";
+import { buildChangeSet } from "@/modules/audit/domain/rules";
 
 import { AuthError, F01_ERROR_CODES, mapBetterAuthError } from "../domain/errors";
 import {
   revokeUserSessionsSchema,
   type RevokeUserSessionsInput,
 } from "../schemas";
+import {
+  AUDIT_ACTIONS,
+  loadUserAuditState,
+  recordUserEvent,
+  resolveAuditActor,
+} from "./audit";
 import type { RequestContext } from "./context";
 
 export interface RevokeResult {
@@ -24,10 +31,26 @@ export async function revokeUserSessions(
   }
 
   try {
+    const actor = await resolveAuditActor(ctx);
+    const before = await loadUserAuditState(parsed.data.userId);
+
     await auth.api.revokeUserSessions({
       body: { userId: parsed.data.userId },
       headers: ctx.headers,
     });
+
+    // The session count is what actually changed, so that is what the event
+    // records — there is no user-column diff to show.
+    await recordUserEvent({
+      actor,
+      action: AUDIT_ACTIONS.USER_SESSIONS_REVOKED,
+      userId: parsed.data.userId,
+      changes: buildChangeSet(
+        { activeSessions: before?.activeSessions ?? 0 },
+        { activeSessions: 0 },
+      ),
+    });
+
     return { success: true };
   } catch (error) {
     throw mapBetterAuthError(error);

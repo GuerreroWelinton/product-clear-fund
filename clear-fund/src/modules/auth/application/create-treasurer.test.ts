@@ -1,17 +1,41 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { createUser, banUser, unbanUser, revokeUserSessions } = vi.hoisted(
-  () => ({
-    createUser: vi.fn(),
-    banUser: vi.fn(),
-    unbanUser: vi.fn(),
-    revokeUserSessions: vi.fn(),
-  }),
-);
+const {
+  createUser,
+  banUser,
+  unbanUser,
+  revokeUserSessions,
+  getSession,
+  userFindUnique,
+  sessionCount,
+  auditCreate,
+} = vi.hoisted(() => ({
+  createUser: vi.fn(),
+  banUser: vi.fn(),
+  unbanUser: vi.fn(),
+  revokeUserSessions: vi.fn(),
+  getSession: vi.fn(),
+  userFindUnique: vi.fn(),
+  sessionCount: vi.fn(),
+  auditCreate: vi.fn(),
+}));
 
 vi.mock("@/lib/auth", () => ({
-  auth: { api: { createUser, banUser, unbanUser, revokeUserSessions } },
+  auth: {
+    api: { createUser, banUser, unbanUser, revokeUserSessions, getSession },
+  },
   ROLES: { SUPER_ADMIN: "SUPER_ADMIN", TREASURER: "TREASURER" },
+}));
+
+// F01's audit wiring (ADR-013) resolves the acting admin from the session, reads
+// the previous user state, and appends the event through the SHARED client:
+// Better Auth owns these writes, so there is no transaction to join.
+vi.mock("@/lib/db", () => ({
+  prisma: {
+    user: { findUnique: userFindUnique },
+    session: { count: sessionCount },
+    auditEvent: { create: auditCreate },
+  },
 }));
 
 import { F01_ERROR_CODES } from "../domain/errors";
@@ -30,6 +54,66 @@ const sampleUser = {
 
 beforeEach(() => {
   vi.clearAllMocks();
+  getSession.mockResolvedValue({
+    user: { id: "admin-1", email: "admin@example.com", role: "SUPER_ADMIN" },
+  });
+  userFindUnique.mockResolvedValue({
+    banned: false,
+    banReason: null,
+    role: "TREASURER",
+  });
+  sessionCount.mockResolvedValue(0);
+  auditCreate.mockResolvedValue({ id: "event-1" });
+});
+
+describe("createTreasurer audit wiring (F23)", () => {
+  it("records USER_CREATED as a global event with the acting admin", async () => {
+    createUser.mockResolvedValue({ user: sampleUser });
+
+    await createTreasurer(
+      { email: "tess@example.com", name: "Tess Treasurer", password: "supersecret" },
+      { headers },
+    );
+
+    expect(auditCreate).toHaveBeenCalledTimes(1);
+    const { data } = auditCreate.mock.calls[0]![0];
+    expect(data).toMatchObject({
+      actorId: "admin-1",
+      actorEmail: "admin@example.com",
+      actorRole: "SUPER_ADMIN",
+      action: "USER_CREATED",
+      entityType: "USER",
+      entityId: "user-1",
+      // Accounts are global: they belong to no fund (spec edge case).
+      cashFundId: null,
+    });
+  });
+
+  it("never persists the initial password, only that it was set (BR-F23-004)", async () => {
+    createUser.mockResolvedValue({ user: sampleUser });
+
+    await createTreasurer(
+      { email: "tess@example.com", name: "Tess Treasurer", password: "supersecret" },
+      { headers },
+    );
+
+    const { data } = auditCreate.mock.calls[0]![0];
+    expect(data.changes.password).toEqual({
+      previous: null,
+      next: "[REDACTED]",
+    });
+    expect(JSON.stringify(data)).not.toContain("supersecret");
+  });
+
+  it("does not record an event when creation is rejected", async () => {
+    await expect(
+      createTreasurer(
+        { email: "not-an-email", name: "x", password: "short" },
+        { headers },
+      ),
+    ).rejects.toBeTruthy();
+    expect(auditCreate).not.toHaveBeenCalled();
+  });
 });
 
 describe("createTreasurer", () => {

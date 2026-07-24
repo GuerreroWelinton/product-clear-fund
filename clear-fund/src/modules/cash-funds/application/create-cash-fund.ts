@@ -1,9 +1,15 @@
 import { prisma } from "@/lib/db";
+import { buildCreationChangeSet } from "@/modules/audit/domain/rules";
 
 import { toCashFundDto, type CashFundDto } from "../domain/dto";
 import { CashFundError, F02_ERROR_CODES, mapUnexpectedError } from "../domain/errors";
 import { toDbDate, validateDayConfig, validatePositiveAmount } from "../domain/rules";
 import { createCashFundSchema, type CreateCashFundInput } from "../schemas";
+import {
+  AUDIT_ACTIONS,
+  cashFundAuditSnapshot,
+  recordCashFundEvent,
+} from "./audit";
 import { requireSuperAdmin } from "./authorize";
 import type { RequestContext } from "./context";
 
@@ -23,24 +29,34 @@ export async function createCashFund(
     );
   }
 
-  await requireSuperAdmin(ctx);
+  const session = await requireSuperAdmin(ctx);
 
   try {
     validateDayConfig(parsed.data.recommendedDay, parsed.data.maximumDay);
     validatePositiveAmount(parsed.data.monthlySavingAmount);
 
-    const fund = await prisma.cashFund.create({
-      data: {
-        name: parsed.data.name,
-        logoKey: parsed.data.logoKey ?? null,
-        phrase: parsed.data.phrase ?? null,
-        monthlySavingAmount: parsed.data.monthlySavingAmount,
-        officialStartDate: toDbDate(parsed.data.officialStartDate),
-        recommendedDay: parsed.data.recommendedDay,
-        maximumDay: parsed.data.maximumDay,
-        maxAdvanceMonths: parsed.data.maxAdvanceMonths,
-        riskThreshold: parsed.data.riskThreshold,
-      },
+    // F23: the audit event commits with the fund itself (ADR-013).
+    const fund = await prisma.$transaction(async (tx) => {
+      const created = await tx.cashFund.create({
+        data: {
+          name: parsed.data.name,
+          logoKey: parsed.data.logoKey ?? null,
+          phrase: parsed.data.phrase ?? null,
+          monthlySavingAmount: parsed.data.monthlySavingAmount,
+          officialStartDate: toDbDate(parsed.data.officialStartDate),
+          recommendedDay: parsed.data.recommendedDay,
+          maximumDay: parsed.data.maximumDay,
+          maxAdvanceMonths: parsed.data.maxAdvanceMonths,
+          riskThreshold: parsed.data.riskThreshold,
+        },
+      });
+      await recordCashFundEvent(tx, {
+        session,
+        action: AUDIT_ACTIONS.CASH_FUND_CREATED,
+        cashFundId: created.id,
+        changes: buildCreationChangeSet(cashFundAuditSnapshot(created)),
+      });
+      return created;
     });
     return toCashFundDto(fund);
   } catch (error) {

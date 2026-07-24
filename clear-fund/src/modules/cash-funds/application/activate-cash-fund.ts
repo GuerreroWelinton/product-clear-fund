@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { buildChangeSet } from "@/modules/audit/domain/rules";
 
 import { toCashFundDto, type CashFundDto } from "../domain/dto";
 import { CashFundError, F02_ERROR_CODES, mapUnexpectedError } from "../domain/errors";
@@ -8,6 +9,11 @@ import {
   validatePositiveAmount,
 } from "../domain/rules";
 import { activateCashFundSchema, type ActivateCashFundInput } from "../schemas";
+import {
+  AUDIT_ACTIONS,
+  cashFundAuditSnapshot,
+  recordCashFundEvent,
+} from "./audit";
 import { requireSuperAdmin } from "./authorize";
 import type { RequestContext } from "./context";
 
@@ -26,7 +32,7 @@ export async function activateCashFund(
     );
   }
 
-  await requireSuperAdmin(ctx);
+  const session = await requireSuperAdmin(ctx);
 
   try {
     const fund = await prisma.cashFund.findUnique({
@@ -52,9 +58,22 @@ export async function activateCashFund(
       validateDayConfig(fund.recommendedDay, fund.maximumDay);
       validatePositiveAmount(fund.monthlySavingAmount.toString());
 
-      const activated = await prisma.cashFund.update({
-        where: { id: fund.id },
-        data: { status: "ACTIVE", activatedAt: new Date() },
+      // F23: the audit event commits with the transition (ADR-013).
+      const activated = await prisma.$transaction(async (tx) => {
+        const row = await tx.cashFund.update({
+          where: { id: fund.id },
+          data: { status: "ACTIVE", activatedAt: new Date() },
+        });
+        await recordCashFundEvent(tx, {
+          session,
+          action: AUDIT_ACTIONS.CASH_FUND_ACTIVATED,
+          cashFundId: row.id,
+          changes: buildChangeSet(
+            cashFundAuditSnapshot(fund),
+            cashFundAuditSnapshot(row),
+          ),
+        });
+        return row;
       });
       return toCashFundDto(activated);
     }
@@ -64,9 +83,21 @@ export async function activateCashFund(
     // deactivatedAt (AC-F02-003 deferred, see ADR-010). `deactivatedAt` is
     // intentionally left untouched here — it is the anchor F06 will read to
     // compute the missed months; do not clear it before that seam runs.
-    const reactivated = await prisma.cashFund.update({
-      where: { id: fund.id },
-      data: { status: "ACTIVE", activatedAt: new Date() },
+    const reactivated = await prisma.$transaction(async (tx) => {
+      const row = await tx.cashFund.update({
+        where: { id: fund.id },
+        data: { status: "ACTIVE", activatedAt: new Date() },
+      });
+      await recordCashFundEvent(tx, {
+        session,
+        action: AUDIT_ACTIONS.CASH_FUND_ACTIVATED,
+        cashFundId: row.id,
+        changes: buildChangeSet(
+          cashFundAuditSnapshot(fund),
+          cashFundAuditSnapshot(row),
+        ),
+      });
+      return row;
     });
     return toCashFundDto(reactivated);
   } catch (error) {

@@ -1,10 +1,11 @@
 import { Decimal } from "decimal.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getSession, findUnique, update } = vi.hoisted(() => ({
+const { getSession, findUnique, update, auditCreate } = vi.hoisted(() => ({
   getSession: vi.fn(),
   findUnique: vi.fn(),
   update: vi.fn(),
+  auditCreate: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -12,9 +13,20 @@ vi.mock("@/lib/auth", () => ({
   ROLES: { SUPER_ADMIN: "SUPER_ADMIN", TREASURER: "TREASURER" },
 }));
 
-vi.mock("@/lib/db", () => ({
-  prisma: { cashFund: { findUnique, update } },
-}));
+vi.mock("@/lib/db", () => {
+  const client = {
+    cashFund: { findUnique, update },
+    auditEvent: { create: auditCreate },
+  };
+  return {
+    // $transaction runs the callback against the same mock client, so the F23
+    // audit write performed inside the transaction is observable here.
+    prisma: {
+      ...client,
+      $transaction: (fn: (tx: typeof client) => unknown) => fn(client),
+    },
+  };
+});
 
 import { F02_ERROR_CODES } from "../domain/errors";
 import { activateCashFund } from "./activate-cash-fund";
@@ -48,6 +60,7 @@ function fundRow(overrides: Partial<Record<string, unknown>> = {}) {
 beforeEach(() => {
   vi.clearAllMocks();
   getSession.mockResolvedValue(superAdminSession);
+  auditCreate.mockResolvedValue({ id: "event-1" });
 });
 
 describe("activateCashFund", () => {
@@ -85,11 +98,34 @@ describe("activateCashFund", () => {
     expect(callArgs.data).not.toHaveProperty("deactivatedAt");
   });
 
+  it("records CASH_FUND_ACTIVATED with the status transition (F23)", async () => {
+    findUnique.mockResolvedValue(fundRow());
+    update.mockResolvedValue(
+      fundRow({ status: "ACTIVE", activatedAt: new Date("2026-02-01T00:00:00.000Z") }),
+    );
+
+    await activateCashFund({ cashFundId: "fund-1" }, { headers });
+
+    expect(auditCreate).toHaveBeenCalledTimes(1);
+    const { data } = auditCreate.mock.calls[0]![0];
+    expect(data).toMatchObject({
+      actorId: "admin-1",
+      action: "CASH_FUND_ACTIVATED",
+      cashFundId: "fund-1",
+    });
+    expect(data.changes.status).toEqual({ previous: "DRAFT", next: "ACTIVE" });
+    expect(data.changes.activatedAt).toEqual({
+      previous: null,
+      next: "2026-02-01T00:00:00.000Z",
+    });
+  });
+
   it("rejects invalid input with F02_INVALID_INPUT", async () => {
     await expect(activateCashFund({ cashFundId: "" }, { headers })).rejects.toMatchObject(
       { code: F02_ERROR_CODES.INVALID_INPUT },
     );
     expect(update).not.toHaveBeenCalled();
+    expect(auditCreate).not.toHaveBeenCalled();
   });
 
   it("rejects a non-Super-Admin caller with F02_UNAUTHORIZED", async () => {

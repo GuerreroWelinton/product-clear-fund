@@ -1,8 +1,15 @@
 import { auth } from "@/lib/auth";
+import { buildChangeSet } from "@/modules/audit/domain/rules";
 
 import { toUserDto, type UserDto } from "../domain/dto";
 import { AuthError, F01_ERROR_CODES, mapBetterAuthError } from "../domain/errors";
 import { enableUserSchema, type EnableUserInput } from "../schemas";
+import {
+  AUDIT_ACTIONS,
+  loadUserAuditState,
+  recordUserEvent,
+  resolveAuditActor,
+} from "./audit";
 import type { RequestContext } from "./context";
 
 // Re-enables a previously disabled account (unban). The user can sign in again;
@@ -19,10 +26,27 @@ export async function enableUser(
   }
 
   try {
+    const actor = await resolveAuditActor(ctx);
+    const before = await loadUserAuditState(parsed.data.userId);
+
     const result = await auth.api.unbanUser({
       body: { userId: parsed.data.userId },
       headers: ctx.headers,
     });
+
+    await recordUserEvent({
+      actor,
+      action: AUDIT_ACTIONS.USER_ENABLED,
+      userId: parsed.data.userId,
+      changes: buildChangeSet(
+        {
+          banned: before?.banned ?? true,
+          banReason: before?.banReason ?? null,
+        },
+        { banned: false, banReason: null },
+      ),
+    });
+
     return toUserDto(result.user);
   } catch (error) {
     throw mapBetterAuthError(error);
