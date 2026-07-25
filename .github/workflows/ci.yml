@@ -18,11 +18,40 @@ defaults:
 jobs:
   verify:
     runs-on: ubuntu-latest
+
+    # Integration tests need a REAL Postgres, not a mock. Two guarantees are
+    # invisible without one: the audit trail's immutability is a database trigger
+    # (F23/BR-F23-003), and F02/F03 atomicity is a real interactive transaction —
+    # the unit mocks make `$transaction` a pass-through, so they can observe that
+    # the audit write is called, never that a failure rolls it back.
+    #
+    # Pinned to Postgres 18 to match the major version Neon runs, so trigger and
+    # transaction behaviour in CI matches the deployed database.
+    services:
+      postgres:
+        image: postgres:18
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: clear_fund_test
+        ports:
+          - 5432:5432
+        # Steps begin as soon as the container starts, which is before Postgres
+        # accepts connections; without the health gate the first query races it.
+        options: >-
+          --health-cmd="pg_isready -U postgres -d clear_fund_test"
+          --health-interval=5s
+          --health-timeout=5s
+          --health-retries=10
+
     env:
-      # Prisma loads prisma.config.ts, which reads DATABASE_URL. CI does not
-      # connect to a real database for lint/typecheck/test/build, so a dummy
-      # value is enough to satisfy config loading and `prisma generate`.
-      DATABASE_URL: "postgresql://ci:ci@localhost:5432/ci?schema=public"
+      # The service container, reachable on the runner host via the port mapping.
+      # It is ephemeral and isolated per run, which is the reason CI does NOT reuse
+      # the shared Neon test branch: the suite TRUNCATEs every table between tests,
+      # so two concurrent workflow runs would wipe each other mid-test and produce
+      # flakes that are near-impossible to diagnose.
+      DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/clear_fund_test?schema=public"
+
     steps:
       - uses: actions/checkout@v4
 
@@ -48,8 +77,23 @@ jobs:
       - name: Typecheck
         run: pnpm run typecheck
 
-      - name: Unit and integration tests
-        run: pnpm test
+      # Unit tests never touch the database (vitest.config.ts excludes
+      # tests/integration), so they run before the schema exists — fastest signal
+      # first.
+      - name: Unit tests
+        run: pnpm run test
+
+      # Applying migrations to an empty database is itself a check: it exercises
+      # the from-scratch migration path on every run, including the hand-written
+      # SQL trigger that Prisma does not generate from the schema.
+      - name: Apply migrations
+        run: pnpm exec prisma migrate deploy
+
+      # Uses the :ci variant, which reads DATABASE_URL from the environment
+      # instead of loading .env.test — that file holds credentials and is
+      # deliberately not in the repo.
+      - name: Integration tests
+        run: pnpm run test:integration:ci
 
       - name: Build
         run: pnpm run build
