@@ -1,6 +1,7 @@
 "use client";
 
 import { MoreHorizontalIcon } from "lucide-react";
+import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useState, useTransition } from "react";
 import { toast } from "sonner";
@@ -73,17 +74,6 @@ export function CashFundRowActions({
   // FR-F03-001: only the Super Admin manages treasurer assignments.
   const canManageTreasurers = isSuperAdmin;
 
-  const hasAnyAction =
-    canEditDraft ||
-    canOpenConfig ||
-    canManageTreasurers ||
-    canActivate ||
-    canDeactivate;
-
-  if (!hasAnyAction) {
-    return <span className="text-muted-foreground text-xs">—</span>;
-  }
-
   return (
     <>
       <DropdownMenu>
@@ -98,6 +88,10 @@ export function CashFundRowActions({
           <MoreHorizontalIcon className="size-4" aria-hidden />
         </DropdownMenuTrigger>
         <DropdownMenuContent align="end">
+          {/* F20: always available — seeing the row already proves access. */}
+          <DropdownMenuItem render={<Link href={`/cash-funds/${fund.id}/ledger`} />}>
+            Ver libro de caja
+          </DropdownMenuItem>
           {canEditDraft ? (
             <DropdownMenuItem onClick={() => setEditOpen(true)}>
               Editar borrador
