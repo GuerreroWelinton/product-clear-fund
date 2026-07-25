@@ -11,7 +11,8 @@
     "test": "vitest run",
     "test:watch": "vitest",
     "seed": "tsx prisma/seed.ts",
-    "test:integration": "dotenv -e .env.test -- vitest run --config vitest.integration.config.ts"
+    "test:integration": "dotenv -e .env.test -- vitest run --config vitest.integration.config.ts",
+    "test:integration:ci": "vitest run --config vitest.integration.config.ts"
   },
   "dependencies": {
     "@base-ui/react": "^1.6.0",
