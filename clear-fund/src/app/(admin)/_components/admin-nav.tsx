@@ -4,6 +4,7 @@ import { MenuIcon } from "lucide-react";
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
 
+import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import {
   DropdownMenu,
@@ -72,46 +73,46 @@ export function AdminNav({ isSuperAdmin, userName }: AdminNavProps) {
         {/* Desktop actions */}
         <div className="hidden items-center gap-3 sm:flex">
           <span className="text-muted-foreground text-sm">{userName}</span>
+          <ThemeToggle />
           <SignOutButton />
         </div>
 
-        {/* Mobile hamburger menu */}
-        <DropdownMenu>
-          <DropdownMenuTrigger
-            aria-label="Abrir menú"
-            render={
-              <Button
-                variant="outline"
-                size="icon"
-                className="rounded-full sm:hidden"
-              />
-            }
-          >
-            <MenuIcon className="size-5" aria-hidden />
-          </DropdownMenuTrigger>
-          <DropdownMenuContent align="end" className="w-52">
-            <div className="text-muted-foreground truncate px-1.5 py-1 text-xs font-medium">
-              {userName}
-            </div>
-            <DropdownMenuSeparator />
-            {links.map((link) => (
-              <DropdownMenuItem
-                key={link.href}
-                render={<Link href={link.href} />}
-                className={cn(
-                  isActive(link.href) &&
-                    "bg-secondary text-secondary-foreground",
-                )}
-              >
-                {link.label}
+        {/* The toggle stays out of the hamburger so it never nests a menu. */}
+        <div className="flex items-center gap-2 sm:hidden">
+          <ThemeToggle />
+          <DropdownMenu>
+            <DropdownMenuTrigger
+              aria-label="Abrir menú"
+              render={
+                <Button variant="outline" size="icon" className="rounded-full" />
+              }
+            >
+              <MenuIcon className="size-5" aria-hidden />
+            </DropdownMenuTrigger>
+            <DropdownMenuContent align="end" className="w-52">
+              <div className="text-muted-foreground truncate px-1.5 py-1 text-xs font-medium">
+                {userName}
+              </div>
+              <DropdownMenuSeparator />
+              {links.map((link) => (
+                <DropdownMenuItem
+                  key={link.href}
+                  render={<Link href={link.href} />}
+                  className={cn(
+                    isActive(link.href) &&
+                      "bg-secondary text-secondary-foreground",
+                  )}
+                >
+                  {link.label}
+                </DropdownMenuItem>
+              ))}
+              <DropdownMenuSeparator />
+              <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
+                Cerrar sesión
               </DropdownMenuItem>
-            ))}
-            <DropdownMenuSeparator />
-            <DropdownMenuItem variant="destructive" onClick={handleSignOut}>
-              Cerrar sesión
-            </DropdownMenuItem>
-          </DropdownMenuContent>
-        </DropdownMenu>
+            </DropdownMenuContent>
+          </DropdownMenu>
+        </div>
       </div>
     </header>
   );

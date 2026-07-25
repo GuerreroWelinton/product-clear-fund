@@ -3,6 +3,8 @@
 // implemented write are declared here. Future features add their own types —
 // the physical column is TEXT, so no migration is needed (ADR-013).
 
+import type { AuditValue } from "@/modules/audit/domain/rules";
+
 // What an event is about. Pairs with entityId to identify the subject.
 export const AUDIT_ENTITY_TYPES = {
   USER: "USER",
@@ -71,4 +73,42 @@ export function auditEntityLabel(value: string): string {
   return value in AUDIT_ENTITY_LABELS
     ? AUDIT_ENTITY_LABELS[value as AuditEntityType]
     : value;
+}
+
+// Fields backed by a `DateTime @db.Date` column. Stored at UTC midnight (see
+// cash-funds `toDbDate`), so they MUST render in UTC: the business zone (UTC-5)
+// would print the PREVIOUS day. Add any new `@db.Date` field here — matching on
+// value shape cannot tell a date-only apart from a real midnight-UTC instant.
+const DATE_ONLY_FIELDS = new Set(["officialStartDate"]);
+
+// Guards the date path so decimal strings, enums and REDACTED pass through.
+const ISO_INSTANT = /^\d{4}-\d{2}-\d{2}T\d{2}:\d{2}:\d{2}(?:\.\d+)?Z$/;
+
+const auditDateOnlyFormatter = new Intl.DateTimeFormat("es-EC", {
+  dateStyle: "medium",
+  timeZone: "UTC",
+});
+
+const auditTimestampFormatter = new Intl.DateTimeFormat("es-EC", {
+  dateStyle: "medium",
+  timeStyle: "medium",
+  // Business zone (TECHNICAL_CONVENTIONS.md); timestamps are stored in UTC.
+  timeZone: "America/Guayaquil",
+});
+
+// Renders one side of a field-level diff for display.
+export function formatAuditValue(field: string, value: AuditValue): string {
+  if (value === null) {
+    return "—";
+  }
+  if (typeof value === "boolean") {
+    return value ? "Sí" : "No";
+  }
+  if (typeof value === "string" && ISO_INSTANT.test(value)) {
+    const formatter = DATE_ONLY_FIELDS.has(field)
+      ? auditDateOnlyFormatter
+      : auditTimestampFormatter;
+    return formatter.format(new Date(value));
+  }
+  return String(value);
 }

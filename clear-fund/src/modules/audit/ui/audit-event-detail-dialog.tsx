@@ -15,8 +15,8 @@ import type { AuditEventDto } from "@/modules/audit/domain/dto";
 import {
   auditActionLabel,
   auditEntityLabel,
+  formatAuditValue,
 } from "@/modules/audit/domain/event-types";
-import type { AuditValue } from "@/modules/audit/domain/rules";
 
 interface AuditEventDetailDialogProps {
   eventId: string;
@@ -30,16 +30,6 @@ const dateTimeFormatter = new Intl.DateTimeFormat("es-EC", {
   // Business timezone (TECHNICAL_CONVENTIONS.md); timestamps are stored in UTC.
   timeZone: "America/Guayaquil",
 });
-
-function formatValue(value: AuditValue): string {
-  if (value === null) {
-    return "—";
-  }
-  if (typeof value === "boolean") {
-    return value ? "Sí" : "No";
-  }
-  return String(value);
-}
 
 // FR-F23-003: the detail view where previous and new values are compared.
 //
@@ -178,10 +168,10 @@ export function AuditEventDetailDialog({
                             {field}
                           </th>
                           <td className="text-muted-foreground px-3 py-2 break-all">
-                            {formatValue(change.previous)}
+                            {formatAuditValue(field, change.previous)}
                           </td>
                           <td className="px-3 py-2 font-medium break-all">
-                            {formatValue(change.next)}
+                            {formatAuditValue(field, change.next)}
                           </td>
                         </tr>
                       ))}

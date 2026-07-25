@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
-import { Geist_Mono, Roboto } from "next/font/google";
+import { Roboto } from "next/font/google";
+
+import { ThemeProvider } from "next-themes";
 
 import { Toaster } from "@/components/ui/sonner";
 
@@ -9,11 +11,6 @@ import "./globals.css";
 // the Tailwind `font-sans` utility and the base html style actually use it.
 const roboto = Roboto({
   variable: "--font-sans",
-  subsets: ["latin"],
-});
-
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
   subsets: ["latin"],
 });
 
@@ -28,13 +25,23 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
+    // next-themes writes the theme class on <html> before paint, so the server
+    // markup cannot match.
     <html
       lang="es"
-      className={`${roboto.variable} ${geistMono.variable} h-full antialiased`}
+      className={`${roboto.variable} h-full antialiased`}
+      suppressHydrationWarning
     >
       <body className="flex min-h-full flex-col">
-        {children}
-        <Toaster />
+        <ThemeProvider
+          attribute="class"
+          defaultTheme="system"
+          enableSystem
+          disableTransitionOnChange
+        >
+          {children}
+          <Toaster />
+        </ThemeProvider>
       </body>
     </html>
   );
