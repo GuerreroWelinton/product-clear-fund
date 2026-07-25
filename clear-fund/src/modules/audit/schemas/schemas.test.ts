@@ -31,6 +31,18 @@ describe("listAuditEventsSchema", () => {
     expect(() => listAuditEventsSchema.parse({ page: 0 })).toThrow();
   });
 
+  // pageSize arrives from the URL, so these are attacker-controlled values.
+  it("rejects a non-positive or non-numeric pageSize", () => {
+    expect(() => listAuditEventsSchema.parse({ pageSize: 0 })).toThrow();
+    expect(() => listAuditEventsSchema.parse({ pageSize: -5 })).toThrow();
+    expect(() => listAuditEventsSchema.parse({ pageSize: "abc" })).toThrow();
+    expect(() => listAuditEventsSchema.parse({ pageSize: 2.5 })).toThrow();
+  });
+
+  it("accepts a small pageSize, so pagination is testable without bulk data", () => {
+    expect(listAuditEventsSchema.parse({ pageSize: "5" }).pageSize).toBe(5);
+  });
+
   it("rejects an empty cashFundId rather than treating it as absent", () => {
     expect(() => listAuditEventsSchema.parse({ cashFundId: "" })).toThrow();
   });

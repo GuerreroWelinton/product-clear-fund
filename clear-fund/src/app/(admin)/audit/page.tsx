@@ -3,7 +3,7 @@ import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { Badge } from "@/components/ui/badge";
-import { Button } from "@/components/ui/button";
+import { Button, buttonVariants } from "@/components/ui/button";
 import {
   Table,
   TableBody,
@@ -14,6 +14,7 @@ import {
 } from "@/components/ui/table";
 import { auth, ROLES } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { cn } from "@/lib/utils";
 import { listAuditEvents } from "@/modules/audit/application/list-audit-events";
 import { AuditError } from "@/modules/audit/domain/errors";
 import {
@@ -31,8 +32,14 @@ const dateTimeFormatter = new Intl.DateTimeFormat("es-EC", {
   timeZone: "America/Guayaquil",
 });
 
-// A pagination control. Rendered as a real link when navigable and as a disabled
-// button at the edges — never as a `<span disabled>`, which is invalid HTML.
+// A pagination control.
+//
+// When navigable it is a plain anchor wearing the button styles, NOT the Button
+// primitive with a Link inside it: paginating is navigation, so it must keep link
+// semantics (open in a new tab, native Enter) and Base UI's Button would layer
+// native-button semantics onto an `<a>` that does not have them.
+// At the edges it is a real disabled `<button>` — never a `<span disabled>`,
+// which is invalid HTML.
 function PageLink({
   href,
   disabled,
@@ -50,14 +57,15 @@ function PageLink({
     );
   }
   return (
-    <Button
-      variant="outline"
-      size="sm"
-      className="rounded-full"
-      render={<Link href={href} />}
+    <Link
+      href={href}
+      className={cn(
+        buttonVariants({ variant: "outline", size: "sm" }),
+        "rounded-full",
+      )}
     >
       {children}
-    </Button>
+    </Link>
   );
 }
 
@@ -90,6 +98,10 @@ export default async function AuditPage({
   const selectedAction = firstValue(params.action);
   const pageParam = Number.parseInt(firstValue(params.page), 10);
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+  // `pageSize` is honoured from the URL so the page length is adjustable without
+  // a code change. The schema validates and caps it (1..AUDIT_PAGE_SIZE_MAX), so
+  // a bogus or oversized value cannot widen the query; empty means the default.
+  const selectedPageSize = firstValue(params.pageSize);
 
   const isSuperAdmin = session.user.role === ROLES.SUPER_ADMIN;
 
@@ -112,6 +124,7 @@ export default async function AuditPage({
       {
         ...(selectedCashFundId ? { cashFundId: selectedCashFundId } : {}),
         ...(selectedAction ? { action: selectedAction } : {}),
+        ...(selectedPageSize ? { pageSize: selectedPageSize } : {}),
         page,
       },
       { headers: requestHeaders },
@@ -133,6 +146,11 @@ export default async function AuditPage({
     }
     if (selectedAction) {
       next.set("action", selectedAction);
+    }
+    // Carried across pages: dropping it would silently reset the page length on
+    // the first Next/Previous click.
+    if (selectedPageSize) {
+      next.set("pageSize", selectedPageSize);
     }
     if (target > 1) {
       next.set("page", String(target));
