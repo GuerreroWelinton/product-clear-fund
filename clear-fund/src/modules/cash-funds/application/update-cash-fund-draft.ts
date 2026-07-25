@@ -1,4 +1,5 @@
 import { prisma } from "@/lib/db";
+import { buildChangeSet } from "@/modules/audit/domain/rules";
 
 import { toCashFundDto, type CashFundDto } from "../domain/dto";
 import { CashFundError, F02_ERROR_CODES, mapUnexpectedError } from "../domain/errors";
@@ -12,6 +13,11 @@ import {
   updateCashFundDraftSchema,
   type UpdateCashFundDraftInput,
 } from "../schemas";
+import {
+  AUDIT_ACTIONS,
+  cashFundAuditSnapshot,
+  recordCashFundEvent,
+} from "./audit";
 import { requireSuperAdmin } from "./authorize";
 import type { RequestContext } from "./context";
 
@@ -32,7 +38,7 @@ export async function updateCashFundDraft(
     );
   }
 
-  await requireSuperAdmin(ctx);
+  const session = await requireSuperAdmin(ctx);
 
   try {
     const fund = await prisma.cashFund.findUnique({
@@ -72,28 +78,42 @@ export async function updateCashFundDraft(
       validateDayConfig(recommendedDay, maximumDay);
     }
 
-    const updated = await prisma.cashFund.update({
-      where: { id: fund.id },
-      data: {
-        ...(parsed.data.name !== undefined ? { name: parsed.data.name } : {}),
-        ...(parsed.data.logoKey !== undefined
-          ? { logoKey: parsed.data.logoKey }
-          : {}),
-        ...(parsed.data.phrase !== undefined
-          ? { phrase: parsed.data.phrase }
-          : {}),
-        ...(parsed.data.monthlySavingAmount !== undefined
-          ? { monthlySavingAmount: parsed.data.monthlySavingAmount }
-          : {}),
-        ...(parsed.data.officialStartDate !== undefined
-          ? { officialStartDate: toDbDate(parsed.data.officialStartDate) }
-          : {}),
-        recommendedDay,
-        maximumDay,
-        maxAdvanceMonths:
-          parsed.data.maxAdvanceMonths ?? fund.maxAdvanceMonths,
-        riskThreshold: parsed.data.riskThreshold ?? fund.riskThreshold,
-      },
+    // F23: the audit event commits with the update (ADR-013). The full snapshot
+    // is diffed, so only the fields that really changed are recorded.
+    const updated = await prisma.$transaction(async (tx) => {
+      const row = await tx.cashFund.update({
+        where: { id: fund.id },
+        data: {
+          ...(parsed.data.name !== undefined ? { name: parsed.data.name } : {}),
+          ...(parsed.data.logoKey !== undefined
+            ? { logoKey: parsed.data.logoKey }
+            : {}),
+          ...(parsed.data.phrase !== undefined
+            ? { phrase: parsed.data.phrase }
+            : {}),
+          ...(parsed.data.monthlySavingAmount !== undefined
+            ? { monthlySavingAmount: parsed.data.monthlySavingAmount }
+            : {}),
+          ...(parsed.data.officialStartDate !== undefined
+            ? { officialStartDate: toDbDate(parsed.data.officialStartDate) }
+            : {}),
+          recommendedDay,
+          maximumDay,
+          maxAdvanceMonths:
+            parsed.data.maxAdvanceMonths ?? fund.maxAdvanceMonths,
+          riskThreshold: parsed.data.riskThreshold ?? fund.riskThreshold,
+        },
+      });
+      await recordCashFundEvent(tx, {
+        session,
+        action: AUDIT_ACTIONS.CASH_FUND_DRAFT_UPDATED,
+        cashFundId: row.id,
+        changes: buildChangeSet(
+          cashFundAuditSnapshot(fund),
+          cashFundAuditSnapshot(row),
+        ),
+      });
+      return row;
     });
     return toCashFundDto(updated);
   } catch (error) {

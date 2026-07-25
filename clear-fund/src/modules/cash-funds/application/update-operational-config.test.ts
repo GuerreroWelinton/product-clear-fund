@@ -1,24 +1,36 @@
 import { Decimal } from "decimal.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
-const { getSession, findFirst, findUnique, update } = vi.hoisted(() => ({
-  getSession: vi.fn(),
-  findFirst: vi.fn(),
-  findUnique: vi.fn(),
-  update: vi.fn(),
-}));
+const { getSession, findFirst, findUnique, update, auditCreate } = vi.hoisted(
+  () => ({
+    getSession: vi.fn(),
+    findFirst: vi.fn(),
+    findUnique: vi.fn(),
+    update: vi.fn(),
+    auditCreate: vi.fn(),
+  }),
+);
 
 vi.mock("@/lib/auth", () => ({
   auth: { api: { getSession } },
   ROLES: { SUPER_ADMIN: "SUPER_ADMIN", TREASURER: "TREASURER" },
 }));
 
-vi.mock("@/lib/db", () => ({
-  prisma: {
+vi.mock("@/lib/db", () => {
+  const client = {
     cashFund: { findUnique, update },
     cashFundUser: { findFirst },
-  },
-}));
+    auditEvent: { create: auditCreate },
+  };
+  return {
+    // $transaction runs the callback against the same mock client, so the F23
+    // audit write performed inside the transaction is observable here.
+    prisma: {
+      ...client,
+      $transaction: (fn: (tx: typeof client) => unknown) => fn(client),
+    },
+  };
+});
 
 import { F02_ERROR_CODES } from "../domain/errors";
 import { updateOperationalConfig } from "./update-operational-config";
@@ -53,6 +65,7 @@ function fundRow(overrides: Partial<Record<string, unknown>> = {}) {
 beforeEach(() => {
   vi.clearAllMocks();
   getSession.mockResolvedValue(superAdminSession);
+  auditCreate.mockResolvedValue({ id: "event-1" });
 });
 
 describe("updateOperationalConfig", () => {
@@ -75,6 +88,57 @@ describe("updateOperationalConfig", () => {
       },
     });
     expect(dto.recommendedDay).toBe(7);
+  });
+
+  it("records CASH_FUND_CONFIG_CHANGED with previous and new values (AC-F23-001)", async () => {
+    findUnique.mockResolvedValue(fundRow());
+    update.mockResolvedValue(fundRow({ recommendedDay: 7, maximumDay: 15 }));
+
+    await updateOperationalConfig(
+      { cashFundId: "fund-1", recommendedDay: 7, maximumDay: 15 },
+      { headers },
+    );
+
+    expect(auditCreate).toHaveBeenCalledTimes(1);
+    const { data } = auditCreate.mock.calls[0]![0];
+    expect(data).toMatchObject({
+      actorId: "admin-1",
+      action: "CASH_FUND_CONFIG_CHANGED",
+      cashFundId: "fund-1",
+    });
+    expect(data.changes).toEqual({
+      recommendedDay: { previous: 5, next: 7 },
+      maximumDay: { previous: 10, next: 15 },
+    });
+  });
+
+  it("records the treasurer as the actor when they make the change", async () => {
+    getSession.mockResolvedValue(treasurerSession);
+    findFirst.mockResolvedValue({ id: "assignment-1" });
+    findUnique.mockResolvedValue(fundRow());
+    update.mockResolvedValue(fundRow({ riskThreshold: 4 }));
+
+    await updateOperationalConfig(
+      { cashFundId: "fund-1", riskThreshold: 4 },
+      { headers },
+    );
+
+    expect(auditCreate.mock.calls[0]![0].data).toMatchObject({
+      actorId: "treasurer-1",
+      actorRole: "TREASURER",
+    });
+  });
+
+  it("does not record an audit event when the fund is INACTIVE", async () => {
+    findUnique.mockResolvedValue(fundRow({ status: "INACTIVE" }));
+
+    await expect(
+      updateOperationalConfig(
+        { cashFundId: "fund-1", riskThreshold: 4 },
+        { headers },
+      ),
+    ).rejects.toBeTruthy();
+    expect(auditCreate).not.toHaveBeenCalled();
   });
 
   it("lets an assigned treasurer update the operational config", async () => {

@@ -1,4 +1,12 @@
 import { prisma } from "@/lib/db";
+import { AUDIT_ACTIONS, AUDIT_ENTITY_TYPES } from "@/modules/audit/domain/event-types";
+import { buildChangeSet } from "@/modules/audit/domain/rules";
+// Concrete path, not the module barrel: the barrel pulls in the audit read side,
+// which depends back on this module (import cycle).
+import {
+  auditActorFromSession,
+  recordAuditEvent,
+} from "@/modules/audit/application/record-audit-event";
 
 import { toAssignmentDto, type TreasurerAssignmentDto } from "../domain/dto";
 import { AssignmentError, F03_ERROR_CODES, mapUnexpectedError } from "../domain/errors";
@@ -24,7 +32,7 @@ export async function unassignTreasurer(
     );
   }
 
-  await requireSuperAdmin(ctx);
+  const session = await requireSuperAdmin(ctx);
 
   const { cashFundId, userId } = parsed.data;
 
@@ -42,12 +50,30 @@ export async function unassignTreasurer(
 
     const action = resolveUnassignAction(existing);
     if (action === "NOOP") {
+      // Already REVOKED: no state changed, so there is nothing to audit
+      // (ADR-013).
       return toAssignmentDto(existing);
     }
 
-    const revoked = await prisma.cashFundUser.update({
-      where: { cashFundId_userId: { cashFundId, userId } },
-      data: { status: "REVOKED" },
+    // F23: the audit event is written INSIDE the same transaction as the change
+    // it describes, so a confirmed revocation can never lack its event (ADR-013).
+    const revoked = await prisma.$transaction(async (tx) => {
+      const row = await tx.cashFundUser.update({
+        where: { cashFundId_userId: { cashFundId, userId } },
+        data: { status: "REVOKED" },
+      });
+      await recordAuditEvent(tx, {
+        actor: auditActorFromSession(session),
+        action: AUDIT_ACTIONS.TREASURER_UNASSIGNED,
+        entityType: AUDIT_ENTITY_TYPES.CASH_FUND_USER,
+        entityId: row.id,
+        cashFundId,
+        changes: buildChangeSet(
+          { status: existing.status },
+          { status: row.status },
+        ),
+      });
+      return row;
     });
     return toAssignmentDto(revoked);
   } catch (error) {

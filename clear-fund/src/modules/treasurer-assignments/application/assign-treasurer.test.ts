@@ -7,6 +7,7 @@ const {
   assignmentFindUnique,
   assignmentCreate,
   assignmentUpdate,
+  auditCreate,
 } = vi.hoisted(() => ({
   getSession: vi.fn(),
   fundFindUnique: vi.fn(),
@@ -14,6 +15,7 @@ const {
   assignmentFindUnique: vi.fn(),
   assignmentCreate: vi.fn(),
   assignmentUpdate: vi.fn(),
+  auditCreate: vi.fn(),
 }));
 
 vi.mock("@/lib/auth", () => ({
@@ -21,8 +23,8 @@ vi.mock("@/lib/auth", () => ({
   ROLES: { SUPER_ADMIN: "SUPER_ADMIN", TREASURER: "TREASURER" },
 }));
 
-vi.mock("@/lib/db", () => ({
-  prisma: {
+vi.mock("@/lib/db", () => {
+  const client = {
     cashFund: { findUnique: fundFindUnique },
     user: { findUnique: userFindUnique },
     cashFundUser: {
@@ -30,8 +32,17 @@ vi.mock("@/lib/db", () => ({
       create: assignmentCreate,
       update: assignmentUpdate,
     },
-  },
-}));
+    auditEvent: { create: auditCreate },
+  };
+  return {
+    // $transaction runs the callback against the same mock client, so the F23
+    // audit write performed inside the transaction is observable here.
+    prisma: {
+      ...client,
+      $transaction: (fn: (tx: typeof client) => unknown) => fn(client),
+    },
+  };
+});
 
 import { F03_ERROR_CODES } from "../domain/errors";
 import { assignTreasurer } from "./assign-treasurer";
@@ -52,6 +63,7 @@ beforeEach(() => {
   getSession.mockResolvedValue({ user: { id: "admin-1", role: "SUPER_ADMIN" } });
   fundFindUnique.mockResolvedValue({ id: "fund-1" });
   userFindUnique.mockResolvedValue({ id: "treasurer-1", role: "TREASURER" });
+  auditCreate.mockResolvedValue({ id: "event-1" });
 });
 
 describe("assignTreasurer", () => {
@@ -80,6 +92,41 @@ describe("assignTreasurer", () => {
     expect(assignmentCreate).not.toHaveBeenCalled();
   });
 
+  it("records TREASURER_ASSIGNED on a first-time assignment (F23)", async () => {
+    assignmentFindUnique.mockResolvedValue(null);
+    assignmentCreate.mockResolvedValue(row);
+
+    await assignTreasurer(input, { headers });
+
+    expect(auditCreate).toHaveBeenCalledTimes(1);
+    const { data } = auditCreate.mock.calls[0]![0];
+    expect(data).toMatchObject({
+      actorId: "admin-1",
+      actorRole: "SUPER_ADMIN",
+      action: "TREASURER_ASSIGNED",
+      entityType: "CASH_FUND_USER",
+      entityId: "a1",
+      cashFundId: "fund-1",
+    });
+    expect(data.changes).toEqual({
+      cashFundId: { previous: null, next: "fund-1" },
+      userId: { previous: null, next: "treasurer-1" },
+      status: { previous: null, next: "ACTIVE" },
+    });
+  });
+
+  it("records TREASURER_ASSIGNED on a reactivation with the status transition", async () => {
+    assignmentFindUnique.mockResolvedValue({ ...row, status: "REVOKED" });
+    assignmentUpdate.mockResolvedValue(row);
+
+    await assignTreasurer(input, { headers });
+
+    expect(auditCreate).toHaveBeenCalledTimes(1);
+    expect(auditCreate.mock.calls[0]![0].data.changes).toEqual({
+      status: { previous: "REVOKED", next: "ACTIVE" },
+    });
+  });
+
   it("is a no-op when an ACTIVE assignment already exists (duplicate)", async () => {
     assignmentFindUnique.mockResolvedValue(row);
 
@@ -88,6 +135,8 @@ describe("assignTreasurer", () => {
     expect(assignmentCreate).not.toHaveBeenCalled();
     expect(assignmentUpdate).not.toHaveBeenCalled();
     expect(dto.status).toBe("ACTIVE");
+    // A no-op changed nothing, so it must not appear in the log (ADR-013).
+    expect(auditCreate).not.toHaveBeenCalled();
   });
 
   it("rejects a non-Super-Admin caller with F03_UNAUTHORIZED", async () => {

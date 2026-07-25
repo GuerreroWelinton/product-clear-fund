@@ -147,3 +147,55 @@ model CashFundUser {
   @@index([cashFundId])
   @@map("cash_fund_user")
 }
+
+// F23 - Append-only audit trail: who did what, when, over which fund or entity
+// (BR-F23-002). Immutability (BR-F23-003) is enforced in the database by a
+// BEFORE UPDATE OR DELETE trigger added in the migration, not only by the
+// absence of update/delete use cases.
+//
+// Deliberately has NO foreign keys (ADR-013): a cascade would destroy history
+// and a SET NULL would be rejected by the immutability trigger. Actor and fund
+// are stored as plain ids plus a readable snapshot taken at event time.
+model AuditEvent {
+  id String @id @default(uuid())
+
+  // Actor snapshot. Nullable so a future system/job actor (F24) can be recorded
+  // without a user row. actorEmail/actorRole freeze who the actor WAS.
+  actorId    String?
+  actorEmail String?
+  actorRole  String?
+
+  occurredAt DateTime @default(now())
+
+  // Null for global events such as USER_CREATED (spec edge case "evento sin
+  // caja"). Only a Super Admin can read global events.
+  cashFundId String?
+
+  // What the event is about, e.g. ("USER", <userId>) or ("CASH_FUND", <fundId>).
+  entityType String
+  entityId   String
+
+  // AuditEventType. Stored as String, validated by the TS literal union at the
+  // module boundary, so future features add types without a migration (ADR-013).
+  action String
+
+  // Free-text motive when the operation carries one (e.g. a ban reason).
+  reason String?
+
+  // Field-level diff, already redacted (BR-F23-004):
+  // { "<field>": { "previous": <json>, "next": <json> } }
+  changes Json?
+
+  // BR-F23-005 seam: relatedEventId points at the event this one reverses or
+  // derives from; correlationId groups every event of one business operation.
+  // Populated by F09/F20 once financial operations exist.
+  relatedEventId String?
+  correlationId  String?
+
+  @@index([cashFundId, occurredAt])
+  @@index([occurredAt])
+  @@index([entityType, entityId])
+  @@index([actorId])
+  @@index([correlationId])
+  @@map("audit_event")
+}

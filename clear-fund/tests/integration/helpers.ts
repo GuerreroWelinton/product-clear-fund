@@ -7,12 +7,17 @@ import { prisma } from "@/lib/db";
 
 export { prisma };
 
-// Wipe all auth tables so each test starts from a known-empty state. CASCADE
-// clears dependent rows (session/account) and RESTART IDENTITY resets any
-// sequences. Table names are the @@map-ed physical names.
+// Wipe all tables so each test starts from a known-empty state. CASCADE clears
+// dependent rows (session/account) and RESTART IDENTITY resets any sequences.
+// Table names are the @@map-ed physical names.
+//
+// `audit_event` is included even though the F23 immutability trigger rejects
+// DELETE: TRUNCATE does not fire FOR EACH ROW triggers, which is exactly why the
+// trigger is scoped to row UPDATE/DELETE (ADR-013). Without this the audit trail
+// would leak between test files.
 export async function resetDb(): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "cash_fund_user", "cash_fund", "session", "account", "user", "verification" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "audit_event", "cash_fund_user", "cash_fund", "session", "account", "user", "verification" RESTART IDENTITY CASCADE',
   );
 }
 

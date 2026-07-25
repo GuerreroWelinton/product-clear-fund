@@ -1,8 +1,10 @@
 import { auth, ROLES } from "@/lib/auth";
+import { buildCreationChangeSet } from "@/modules/audit/domain/rules";
 
 import { toUserDto, type UserDto } from "../domain/dto";
 import { AuthError, F01_ERROR_CODES, mapBetterAuthError } from "../domain/errors";
 import { createTreasurerSchema, type CreateTreasurerInput } from "../schemas";
+import { AUDIT_ACTIONS, recordUserEvent, resolveAuditActor } from "./audit";
 import type { RequestContext } from "./context";
 
 // FR-F01-001: a Super Admin creates treasurer accounts. Better Auth's admin
@@ -20,6 +22,8 @@ export async function createTreasurer(
   }
 
   try {
+    const actor = await resolveAuditActor(ctx);
+
     const result = await auth.api.createUser({
       body: {
         email: parsed.data.email,
@@ -29,6 +33,23 @@ export async function createTreasurer(
       },
       headers: ctx.headers,
     });
+
+    // F23 / BR-F23-004: `password` is listed on purpose. The change set records
+    // THAT an initial password was set and redacts its value — the field name
+    // matches the sensitive denylist, so "[REDACTED]" is stored, never the
+    // secret.
+    await recordUserEvent({
+      actor,
+      action: AUDIT_ACTIONS.USER_CREATED,
+      userId: result.user.id,
+      changes: buildCreationChangeSet({
+        email: parsed.data.email,
+        name: parsed.data.name,
+        role: ROLES.TREASURER,
+        password: parsed.data.password,
+      }),
+    });
+
     return toUserDto(result.user);
   } catch (error) {
     throw mapBetterAuthError(error);
