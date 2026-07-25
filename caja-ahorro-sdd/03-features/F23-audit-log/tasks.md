@@ -1,6 +1,6 @@
 # Tareas - F23 Auditoría transversal
 
-> Estado: implementada en `feature/F23-audit-log`. Decisiones de alcance, inmutabilidad,
+> Estado: completada en `feature/F23-audit-log`. Decisiones de alcance, inmutabilidad,
 > costuras diferidas y escenarios adaptados registrados en
 > `01-foundation/adrs/ADR-013-f23-audit-log-scope.md`.
 > Convención: `[x]` hecho, `[~]` parcial/diferido con nota, `[ ]` pendiente.
@@ -46,7 +46,7 @@
 ## 6. Verificación
 
 - [x] Implementar todos los escenarios de `acceptance.md`. (`tests/integration/audit.test.ts`: AC-F23-001 adaptado — dos escenarios, AC-F23-003 — tres escenarios, más inmutabilidad BR-F23-003, redacción BR-F23-004, cobertura BR-F23-001, no-op sin evento, operación fallida sin evento, orden y paginación, y llamante sin sesión. **AC-F23-002 diferido a F09**: no existe ninguna reversa que enlazar; la costura `linkToOriginalEvent` sí está implementada y probada unitariamente. ADR-013 §8.)
-- [x] Ejecutar lint, typecheck y pruebas. (lint ✓, typecheck ✓, build ✓, unitarias 204 ✓, integración 27 ✓ + 1 todo — de las cuales 13 son los escenarios de F23; los 14 de F01/F02/F03 siguen verdes tras el cableado retroactivo.)
+- [x] Ejecutar lint, typecheck y pruebas. (lint ✓, typecheck ✓, build ✓, unitarias 206 ✓, integración 27 ✓ + 1 todo — de las cuales 13 son los escenarios de F23; los 14 de F01/F02/F03 siguen verdes tras el cableado retroactivo.)
 - [~] Ejecutar E2E del flujo principal. (Diferido: sin runner Playwright configurado, igual que F02/F03. El flujo está cubierto por integración con sesiones reales de Better Auth.)
-- [ ] Realizar prueba manual con datos representativos. (Pendiente del responsable funcional, igual que en F01/F02/F03.)
-- [~] Actualizar documentación y marcar la feature como completada. (ADR-013, trazabilidad y este `tasks.md` actualizados. La marca "Completada" queda pendiente de los dos únicos puntos del `DEFINITION_OF_DONE.md` que no son autocertificables: la revisión visual en escritorio y móvil, y la validación con datos de una caja de prueba. Todo el resto del DoD está cumplido y verificado.)
+- [x] Realizar prueba manual con datos representativos. (Validada por el responsable funcional sobre la base de desarrollo, en escritorio y móvil. La validación encontró un defecto real de accesibilidad en el paginador —un `<Link>` dentro del primitivo `Button` de Base UI— invisible hasta entonces porque ese bloque solo se renderiza cuando el total supera el tamaño de página; corregido en el commit de fix, junto con el cableado de `pageSize` desde la URL que lo hizo reproducible.)
+- [x] Actualizar documentación y marcar la feature como completada. (ADR-013, trazabilidad y este `tasks.md`. Los 13 puntos del `DEFINITION_OF_DONE.md` están cumplidos, incluidos los dos no autocertificables: revisión visual en escritorio y móvil, y validación con datos de una caja de prueba.)
