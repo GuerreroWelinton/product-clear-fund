@@ -53,13 +53,16 @@ jobs:
       DATABASE_URL: "postgresql://postgres:postgres@localhost:5432/clear_fund_test?schema=public"
 
     steps:
-      - uses: actions/checkout@v4
+      # Action majors pinned to the ones whose runtime is node24. The previous
+      # majors (checkout@v4, setup-node@v4, action-setup@v4) declare node20, which
+      # the runner now force-upgrades while warning that Node 20 is deprecated.
+      - uses: actions/checkout@v7
 
-      - uses: pnpm/action-setup@v4
+      - uses: pnpm/action-setup@v6
         with:
           package_json_file: clear-fund/package.json
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v7
         with:
           node-version: "24.16.0"
           cache: pnpm
