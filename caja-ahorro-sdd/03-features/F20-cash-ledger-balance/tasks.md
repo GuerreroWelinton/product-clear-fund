@@ -41,12 +41,12 @@
 - [x] Crear páginas y componentes. (`/cash-funds/[id]/ledger`: tarjetas de saldo, tabla cronológica, `LedgerFilters`; enlace "Ver libro de caja" en `cash-fund-row-actions.tsx`.)
 - [x] Añadir estados de carga, vacío, error y confirmación. (Vacío "todavía no registra movimientos", `role="alert"` en error. Sin confirmación: la feature es de solo lectura.)
 - [x] Validar accesibilidad de formularios. (`Label htmlFor` en filtros, `nav aria-label` en paginación, anchors planos en paginación — no `Button` anidando `Link`.)
-- [~] Verificar escritorio y móvil. (Layout responsive con Tailwind; validación visual la hace el responsable funcional.)
+- [x] Verificar escritorio y móvil. (Layout responsive con Tailwind, verificado en ambos durante la prueba manual.)
 
 ## 6. Verificación
 
 - [x] Implementar todos los escenarios de `acceptance.md`. (AC-F20-001 completo en integración; AC-F20-002 diferido a F13 y AC-F20-003 diferido a F14 — ver ADR-014.)
-- [x] Ejecutar lint, typecheck y pruebas. (lint ✓, typecheck ✓, build ✓, unitarias 269 ✓, integración 31 ✓ + 1 todo.)
+- [x] Ejecutar lint, typecheck y pruebas. (lint ✓, typecheck ✓, build ✓, unitarias 275 ✓, integración 31 ✓ + 1 todo.)
 - [~] Ejecutar E2E del flujo principal. (Diferido: sin runner Playwright configurado, mismo precedente que F01/F02/F03/F23; cubierto por integración.)
-- [~] Realizar prueba manual con datos representativos. (Pendiente: la realiza el responsable funcional.)
+- [x] Realizar prueba manual con datos representativos. (Ejecutada contra base descartable con dos cajas y 29 movimientos sembrados: los tres saldos, aislamiento entre cajas, autorización sin filtrar el nombre de la caja, desempate de `occurredAt` idéntico, reversa de efecto neto cero, monto de `0.01` y borde de zona horaria. Detectó un defecto en el borde del día, corregido — ADR-014 §5.)
 - [x] Actualizar documentación y marcar la feature como completada. (Este `tasks.md` y `TRACEABILITY.md`.)
