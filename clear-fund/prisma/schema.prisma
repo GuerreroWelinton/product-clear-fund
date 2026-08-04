@@ -122,6 +122,7 @@ model CashFund {
   updatedAt DateTime @updatedAt
 
   assignments CashFundUser[]
+  movements   CashMovement[]
 
   @@index([status])
   @@map("cash_fund")
@@ -146,6 +147,55 @@ model CashFundUser {
   @@index([userId])
   @@index([cashFundId])
   @@map("cash_fund_user")
+}
+
+// F20 - Direction carries the sign; amount is always positive (migration check).
+enum CashMovementDirection {
+  IN
+  OUT
+}
+
+// F20 - Append-only cash ledger (ADR-004, ADR-014). Balances are derived from
+// this table, never stored. Immutability is enforced by a trigger in the
+// migration. The FK is safe despite that trigger because onDelete: Restrict
+// never issues an UPDATE/DELETE on this row.
+model CashMovement {
+  id String @id @default(uuid())
+
+  cashFundId String
+  cashFund   CashFund              @relation(fields: [cashFundId], references: [id], onDelete: Restrict)
+  direction  CashMovementDirection
+  amount     Decimal               @db.Decimal(18, 2)
+
+  // Open vocabulary (like AuditEvent.action): validated by the TS literal
+  // union in movement-types.ts, so a future producer feature adds a value
+  // without a migration.
+  movementType String
+
+  // FR-F20-002: every movement traces back to the operation that produced it.
+  sourceType String
+  sourceId   String
+
+  // Populated by F09 when this movement is reversed by another one.
+  reversedMovementId String?
+
+  // ADR-013 §8 / ADR-014 seam: links this movement to the audit event of the
+  // same business operation, and groups the whole operation's events.
+  relatedEventId String?
+  correlationId  String?
+
+  // Actor snapshot (BR-F20-007 "responsable"), frozen at movement time.
+  // Plain id, no FK, same reasoning as ADR-013 §10.
+  actorId    String
+  actorEmail String
+  actorRole  String
+
+  occurredAt DateTime @default(now())
+
+  @@index([cashFundId, occurredAt])
+  @@index([cashFundId, movementType])
+  @@index([correlationId])
+  @@map("cash_movement")
 }
 
 // F23 - Append-only audit trail: who did what, when, over which fund or entity

@@ -17,7 +17,7 @@ export { prisma };
 // would leak between test files.
 export async function resetDb(): Promise<void> {
   await prisma.$executeRawUnsafe(
-    'TRUNCATE TABLE "audit_event", "cash_fund_user", "cash_fund", "session", "account", "user", "verification" RESTART IDENTITY CASCADE',
+    'TRUNCATE TABLE "cash_movement", "audit_event", "cash_fund_user", "cash_fund", "session", "account", "user", "verification" RESTART IDENTITY CASCADE',
   );
 }
 

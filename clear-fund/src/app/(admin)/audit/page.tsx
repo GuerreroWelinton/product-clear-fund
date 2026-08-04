@@ -13,6 +13,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { auth, ROLES } from "@/lib/auth";
+import { BUSINESS_TIME_ZONE } from "@/lib/dates";
 import { prisma } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { listAuditEvents } from "@/modules/audit/application/list-audit-events";
@@ -28,8 +29,7 @@ import { listAssignedCashFunds } from "@/modules/treasurer-assignments/applicati
 const dateTimeFormatter = new Intl.DateTimeFormat("es-EC", {
   dateStyle: "short",
   timeStyle: "short",
-  // Business timezone (TECHNICAL_CONVENTIONS.md); timestamps are stored in UTC.
-  timeZone: "America/Guayaquil",
+  timeZone: BUSINESS_TIME_ZONE,
 });
 
 // A pagination control.
