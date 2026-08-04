@@ -43,6 +43,12 @@ features:
    propios (crear/configurar una caja no mueve dinero). F20 y F23 los cablearán de forma
    retroactiva si corresponde, igual que en F01 (ADR-008).
 
+   **Cumplido en la parte de auditoría:** F23 la cableó (ADR-013 §6). Crear, activar,
+   desactivar, editar borrador y cambiar configuración operativa registran evento vía
+   `cash-funds/application/audit.ts`, en la misma transacción que el cambio auditado. La
+   parte de ledger no aplica a F02: los productores de movimientos son F06/F08/F14/F17
+   (ADR-014 §2).
+
 ## Consecuencias
 - F02 permanece fiel a su spec y a su única dependencia declarada (F01).
 - AC-F02-001 y AC-F02-002 se implementan y prueban completamente en F02.

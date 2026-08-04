@@ -1,7 +1,7 @@
 # ADR-012 - F03: alcance, auditoría diferida y costuras heredadas
 
 ## Estado
-Aceptado.
+Aceptado. Costura de auditoría **cumplida**: F23 la cableó a las acciones de F03.
 
 ## Contexto
 F03 (asignación de tesoreros) declara como dependencias solo **F01 y F02**. Su `plan.md`
@@ -22,6 +22,9 @@ acto de asignar/retirar un tesorero:
    cubre con *soft-delete*: retirar una asignación marca `CashFundUser.status = REVOKED` y
    **nunca borra la fila**; `createdAt`/`updatedAt` conservan las fechas. El `AuditEvent`
    formal (quién ejecutó cada asignación/revocación) lo cableará F23 de forma retroactiva.
+   **Cumplido** (ADR-013 §6): asignar y retirar registran evento con entidad
+   `CASH_FUND_USER`, atómico con la escritura. Las operaciones que resuelven en `NOOP` no
+   registran evento, por decisión de ADR-013 §6.
 2. **Sin impacto financiero.** F03 no crea `CashMovement` ni usa `Decimal`/transacciones
    monetarias. Las escrituras sobre `CashFundUser` son atómicas por sí mismas.
 3. **Sin migración nueva.** F03 reutiliza la tabla `CashFundUser` de F02. La tarea "crear
@@ -38,7 +41,9 @@ acto de asignar/retirar un tesorero:
 - El *enforcement* "tesorero con asignación activa" ya existe en `cash-funds/authorize.ts`
   (heredado de F02); F03 aporta la **gestión** (asignar / retirar / listar).
 - AC-F03-001/002/003 se implementan y prueban completamente en F03 (integración).
-- Queda pendiente para F23 conectar la auditoría formal a las acciones de F03.
+- Quedaba pendiente para F23 conectar la auditoría formal a las acciones de F03. **Cerrado**:
+  `assignTreasurer` y `unassignTreasurer` registran evento vía
+  `treasurer-assignments/application/audit.ts`.
 
 ## Idempotencia (caso límite "asignación duplicada")
 - `assignTreasurer`: sin asignación → crear ACTIVE; asignación REVOKED → reactivar a ACTIVE;
