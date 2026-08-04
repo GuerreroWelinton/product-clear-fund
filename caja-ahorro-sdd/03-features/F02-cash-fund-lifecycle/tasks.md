@@ -32,7 +32,7 @@
 - [x] Añadir autorización por caja. (SUPER_ADMIN global; tesorero con asignación `CashFundUser` activa para config operativa.)
 - [~] Añadir transacciones. (N/A en F02: cada caso de uso es una sola escritura de fila; no hay operación financiera compuesta. Ver ADR-010.)
 - [~] Integrar CashMovement si existe impacto financiero. (N/A: crear/configurar caja no mueve dinero; ledger es F20, ADR-010.)
-- [~] Integrar AuditEvent. (Diferido a F23, ADR-008/ADR-010.)
+- [x] Integrar AuditEvent. (Diferido a F23 por ADR-008/ADR-010 y **ya entregado por F23**: crear, activar, desactivar, editar borrador y configuración operativa registran evento vía `cash-funds/application/audit.ts`.)
 - [~] Añadir idempotencia o protección de concurrencia. (Defensa por unique + CHECK a nivel DB; idempotency key no aplica a estas operaciones.)
 
 ## 5. Interfaz
