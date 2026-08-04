@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F10-002
 
 **Escenario:** Dada una obligación importada vencida, entonces aparece en morosidad pero no suma riesgo.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F10-003
 
 **Escenario:** Dada una fecha máxima igual a recomendada, entonces no se produce estado amarillo.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

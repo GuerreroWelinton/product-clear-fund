@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F21-002
 
 **Escenario:** Dado un tesorero no asignado, entonces no puede consultar ni exportar la caja.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F21-003
 
 **Escenario:** Dado un número con saldo migrado, entonces el estado de cuenta distingue el movimiento inicial.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

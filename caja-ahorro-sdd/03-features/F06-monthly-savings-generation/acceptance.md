@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F06-002
 
 **Escenario:** Dado el mismo job ejecutado dos veces, entonces no se crean duplicados.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F06-003
 
 **Escenario:** Dada una fecha configurada en domingo, entonces la fecha efectiva se mueve al lunes.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

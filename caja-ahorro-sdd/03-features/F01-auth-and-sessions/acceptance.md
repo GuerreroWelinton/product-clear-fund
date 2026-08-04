@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F01-002
 
 **Escenario:** Dado un usuario deshabilitado, cuando intenta iniciar sesión, entonces el acceso es rechazado.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F01-003
 
 **Escenario:** Dado un tesorero con sesiones activas, cuando el Super Admin lo deshabilita, entonces todas sus sesiones quedan revocadas.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

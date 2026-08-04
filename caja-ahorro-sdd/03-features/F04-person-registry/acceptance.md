@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F04-002
 
 **Escenario:** Dada una cédula nueva disponible y un motivo, cuando se corrige, entonces se actualiza y se audita.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F04-003
 
 **Escenario:** Dada una cédula ocupada por otra persona, cuando se intenta corregir, entonces se bloquea.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

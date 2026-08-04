@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F07-002
 
 **Escenario:** Dado un mes anterior pendiente, cuando se intenta pagar un mes posterior, entonces se exige cubrir el anterior.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F07-003
 
 **Escenario:** Dado un límite reducido, entonces los anticipos ya pagados permanecen válidos.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

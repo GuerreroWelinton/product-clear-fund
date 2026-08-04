@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F11-002
 
 **Escenario:** Dada una plantilla activa, cuando se intenta editar, entonces se rechaza.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F11-003
 
 **Escenario:** Dada una plantilla inactiva, cuando se reactiva, entonces conserva exactamente sus condiciones.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

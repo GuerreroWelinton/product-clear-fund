@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F15-002
 
 **Escenario:** Dado ahorro actual pendiente y seleccionado en el mismo pago, entonces se permite pagar la cuota.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F15-003
 
 **Escenario:** Dada una cuota anterior pendiente, entonces no se puede pagar una posterior.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

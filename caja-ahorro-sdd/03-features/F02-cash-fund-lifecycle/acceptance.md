@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F02-002
 
 **Escenario:** Dada una caja inactiva, cuando un tesorero intenta registrar una operación, entonces la operación es rechazada.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F02-003
 
 **Escenario:** Dada una caja reactivada después de tres meses, cuando corre la recuperación, entonces se crean las cuotas faltantes sin duplicados.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F22-002
 
 **Escenario:** Dada una cuota importada vencida, entonces aparece en morosidad y no crea RiskEvent.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F22-003
 
 **Escenario:** Dado un lote válido, entonces puede ejecutarse en prueba y producir el mismo resultado al repetir desde una base limpia.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 
