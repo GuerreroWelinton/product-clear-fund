@@ -14,6 +14,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { auth } from "@/lib/auth";
+import { BUSINESS_TIME_ZONE } from "@/lib/dates";
 import { prisma } from "@/lib/db";
 import { cn } from "@/lib/utils";
 import { getCashFundBalance, listCashMovements } from "@/modules/ledger/application";
@@ -32,8 +33,8 @@ const currencyFormatter = new Intl.NumberFormat("es-EC", {
 const dateTimeFormatter = new Intl.DateTimeFormat("es-EC", {
   dateStyle: "short",
   timeStyle: "short",
-  // Business timezone (TECHNICAL_CONVENTIONS.md); timestamps are stored UTC.
-  timeZone: "America/Guayaquil",
+  // Same zone the date filters resolve in; timestamps are stored UTC.
+  timeZone: BUSINESS_TIME_ZONE,
 });
 
 function formatAmount(amount: string, currency: string): string {

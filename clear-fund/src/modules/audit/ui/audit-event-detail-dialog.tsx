@@ -10,6 +10,7 @@ import {
   DialogHeader,
   DialogTitle,
 } from "@/components/ui/dialog";
+import { BUSINESS_TIME_ZONE } from "@/lib/dates";
 import { getAuditEventAction } from "@/modules/audit/application/actions";
 import type { AuditEventDto } from "@/modules/audit/domain/dto";
 import {
@@ -27,8 +28,7 @@ interface AuditEventDetailDialogProps {
 const dateTimeFormatter = new Intl.DateTimeFormat("es-EC", {
   dateStyle: "medium",
   timeStyle: "medium",
-  // Business timezone (TECHNICAL_CONVENTIONS.md); timestamps are stored in UTC.
-  timeZone: "America/Guayaquil",
+  timeZone: BUSINESS_TIME_ZONE,
 });
 
 // FR-F23-003: the detail view where previous and new values are compared.

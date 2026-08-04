@@ -3,6 +3,7 @@
 // implemented write are declared here. Future features add their own types —
 // the physical column is TEXT, so no migration is needed (ADR-013).
 
+import { BUSINESS_TIME_ZONE } from "@/lib/dates";
 import type { AuditValue } from "@/modules/audit/domain/rules";
 
 // What an event is about. Pairs with entityId to identify the subject.
@@ -92,8 +93,7 @@ const auditDateOnlyFormatter = new Intl.DateTimeFormat("es-EC", {
 const auditTimestampFormatter = new Intl.DateTimeFormat("es-EC", {
   dateStyle: "medium",
   timeStyle: "medium",
-  // Business zone (TECHNICAL_CONVENTIONS.md); timestamps are stored in UTC.
-  timeZone: "America/Guayaquil",
+  timeZone: BUSINESS_TIME_ZONE,
 });
 
 // Renders one side of a field-level diff for display.
