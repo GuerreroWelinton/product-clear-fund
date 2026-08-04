@@ -83,12 +83,32 @@ describe("listCashMovements", () => {
           cashFundId: FUND_ID,
           direction: "OUT",
           movementType: "EXPENSE",
+          // Day boundaries in the business timezone (UTC-5), not in UTC:
+          // the filter is a business rule (TECHNICAL_CONVENTIONS.md).
           occurredAt: {
-            gte: new Date("2026-07-01T00:00:00.000Z"),
-            lt: new Date("2026-08-01T00:00:00.000Z"),
+            gte: new Date("2026-07-01T05:00:00.000Z"),
+            lt: new Date("2026-08-01T05:00:00.000Z"),
           },
         }),
       }),
+    );
+  });
+
+  // Regression from F20 manual validation: a movement at 20:00 on June 30 in
+  // Guayaquil is stored as 2026-07-01T01:00:00Z. Filtering up to June 30 must
+  // keep it, because that is the day the ledger displays for it.
+  it("includes a late-evening movement in the business day it is displayed under", async () => {
+    await listCashMovements(
+      { cashFundId: FUND_ID, toDate: "2026-06-30" },
+      { headers },
+    );
+
+    const where = findMany.mock.calls[0]?.[0]?.where as {
+      occurredAt: { lt: Date };
+    };
+    expect(where.occurredAt.lt.toISOString()).toBe("2026-07-01T05:00:00.000Z");
+    expect(new Date("2026-07-01T01:00:00.000Z") < where.occurredAt.lt).toBe(
+      true,
     );
   });
 

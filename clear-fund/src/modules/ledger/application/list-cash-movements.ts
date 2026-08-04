@@ -1,3 +1,4 @@
+import { businessDayEndExclusive, businessDayStart } from "@/lib/dates";
 import { prisma } from "@/lib/db";
 
 import { toCashMovementDto, type CashMovementPageDto } from "../domain/dto";
@@ -10,19 +11,19 @@ import { requireSuperAdminOrAssignedTreasurer } from "./authorize";
 import type { RequestContext } from "./context";
 
 // `toDate` is inclusive at the day boundary (isoDate is a calendar date, not
-// an instant): filtering is [fromDate 00:00, toDate+1day 00:00).
+// an instant): filtering is [fromDate 00:00, toDate+1day 00:00). The day
+// boundaries come from the business timezone, matching the zone the ledger
+// renders in — a UTC boundary pushes late-evening rows into the next day.
 function dateRangeFilter(fromDate?: string, toDate?: string) {
   if (!fromDate && !toDate) {
     return undefined;
   }
   const range: { gte?: Date; lt?: Date } = {};
   if (fromDate) {
-    range.gte = new Date(`${fromDate}T00:00:00.000Z`);
+    range.gte = businessDayStart(fromDate);
   }
   if (toDate) {
-    const exclusiveEnd = new Date(`${toDate}T00:00:00.000Z`);
-    exclusiveEnd.setUTCDate(exclusiveEnd.getUTCDate() + 1);
-    range.lt = exclusiveEnd;
+    range.lt = businessDayEndExclusive(toDate);
   }
   return range;
 }
