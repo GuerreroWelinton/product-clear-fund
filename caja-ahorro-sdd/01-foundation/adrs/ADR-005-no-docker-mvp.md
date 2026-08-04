@@ -12,4 +12,4 @@ El desarrollo local usa Node.js y pnpm directamente. Railway construye la aplica
 ## Consecuencias
 - Menos complejidad inicial.
 - La configuración debe seguir siendo portable.
-- Docker puede agregarse para VPS, CI avanzada o Testcontainers.
+- Docker puede agregarse para VPS, CI avanzada o Testcontainers. **Ya ocurrió en CI**: el job `verify` levanta un service container `postgres:18` para las pruebas de integración. La decisión sigue vigente solo para el entorno local.
