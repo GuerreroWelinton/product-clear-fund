@@ -8,6 +8,7 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+- Requisitos que verifica: `FR-F03-002`, `BR-F03-005`.
 
 ### AC-F03-002
 
@@ -15,6 +16,7 @@
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+- Requisitos que verifica: `FR-F03-001`, `BR-F03-002`.
 
 ### AC-F03-003
 
@@ -22,6 +24,7 @@
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+- Requisitos que verifica: `FR-F03-003`, `BR-F03-004`, `BR-F03-005`.
 
 ## Matriz mínima de pruebas
 
