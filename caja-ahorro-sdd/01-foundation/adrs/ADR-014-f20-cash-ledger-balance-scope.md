@@ -11,6 +11,10 @@ un `CashMovement` existe todavía: los aportes son F06/F08, el desembolso F14 y 
 Además `plan.md` ubica el módulo en `src/modules/cash-ledger-balance`, mientras
 `ARCHITECTURE.md` lo declara como `ledger`.
 
+La validación manual descubrió un tercer punto sin definir: el libro filtra por fecha
+calendario sobre una columna que guarda instantes, y nadie había fijado qué zona define el
+borde del día.
+
 ## Decisión
 
 ### 1. Carpeta del módulo
@@ -38,8 +42,28 @@ el escenario de integración lo implementa la feature habilitante.
 Por `BR-F20-006` y ADR-004, el módulo no expone ningún caso de uso de creación ni corrección
 manual de movimientos. La única corrección es la reversa, y la implementa F09.
 
+### 5. El borde del día lo define la zona de negocio
+`fromDate` y `toDate` reciben una fecha calendario, no un instante, y una fecha calendario
+solo existe respecto de una zona. El rango se resuelve en `America/Guayaquil`
+(`TECHNICAL_CONVENTIONS.md`), no en UTC ni en la zona del navegador:
+
+- `toDate` es inclusivo: el rango es `[fromDate 00:00, toDate+1día 00:00)` en esa zona.
+- Es la misma zona en que se renderiza, así que una fila mostrada como 30/06 20:00 entra en
+  un filtro hasta el 30/06 aunque se persista como 01/07 en UTC.
+- Se descartó la zona del visitante: el día de un movimiento es un hecho contable único, la
+  página es un Server Component que nunca recibe la zona del navegador, y las URLs con
+  filtros dejarían de devolver el mismo conjunto para todos.
+
+Las utilidades viven en `src/lib/dates` (`BUSINESS_TIME_ZONE`, `businessDayStart`,
+`businessDayEndExclusive`), el hueco que ARCHITECTURE.md reserva para fechas. El offset se
+lee con `Intl` en el instante resuelto en lugar de fijarse en `-05:00`, para no depender de
+que Ecuador no aplique horario de verano.
+
 ## Consecuencias
 - El código respeta la lista de módulos de ARCHITECTURE.md.
+- Toda feature que filtre o agrupe por fecha — cierres mensuales, intereses, días de mora —
+  usa `src/lib/dates` en vez de construir sus propios bordes. Un borde en UTC manda los
+  movimientos de la noche del último día del mes al mes siguiente.
 - F13 hereda poblar el saldo comprometido; F14, la validación de suficiencia en el desembolso.
 - F20 salda la deuda de ADR-013 §8 en la parte que le toca: `CashMovement` nace con
   `relatedEventId` y `correlationId` para enlazar movimiento y evento de auditoría.
