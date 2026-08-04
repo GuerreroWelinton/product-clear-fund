@@ -33,7 +33,7 @@
 - [x] Añadir autorización por caja. (`requireSuperAdmin` para gestión; enforcement del tesorero heredado de `cash-funds/authorize.ts`.)
 - [~] Añadir transacciones. (N/A: cada escritura sobre `CashFundUser` es atómica; sin operación multi-entidad.)
 - [~] Integrar CashMovement si existe impacto financiero. (N/A, ver ADR-012.)
-- [~] Integrar AuditEvent. (Diferido a F23 — costura; historial cubierto por soft-delete REVOKED + timestamps. ADR-012.)
+- [x] Integrar AuditEvent. (Diferido a F23 por ADR-012 y **ya entregado por F23**: asignar y retirar registran evento con entidad `CASH_FUND_USER`. El historial además queda en el soft-delete REVOKED + timestamps.)
 - [x] Añadir idempotencia o protección de concurrencia. (`@@unique` + reglas de idempotencia: duplicado = no-op, reactivación de REVOKED.)
 
 ## 5. Interfaz

@@ -8,19 +8,23 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+- Requisitos que verifica: `FR-F03-002`, `BR-F03-005`.
+
 ### AC-F03-002
 
 **Escenario:** Dada una caja con dos tesoreros, cuando cualquiera opera, entonces la operación registra al responsable correcto.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+- Requisitos que verifica: `FR-F03-001`, `BR-F03-002`.
+
 ### AC-F03-003
 
 **Escenario:** Dada una asignación retirada, cuando el tesorero vuelve a consultar, entonces la caja deja de estar disponible.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
+- Requisitos que verifica: `FR-F03-003`, `BR-F03-004`, `BR-F03-005`.
 
 ## Matriz mínima de pruebas
 

@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F19-002
 
 **Escenario:** Dado un neto negativo, entonces no se retira el número.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F19-003
 
 **Escenario:** Dado un retiro confirmado, entonces el número queda terminalmente WITHDRAWN y no se reutiliza.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

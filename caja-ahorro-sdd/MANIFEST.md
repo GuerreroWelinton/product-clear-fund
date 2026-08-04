@@ -1,6 +1,7 @@
 # Manifiesto de archivos
 
-Total: 143 archivos Markdown.
+Total: 149 archivos Markdown. No se listan a sí mismos `MANIFEST.md` ni
+`SHA256SUMS.md`, así que el árbol contiene 151 archivos `.md`.
 
 | Archivo | Propósito |
 |---|---|
@@ -26,6 +27,11 @@ Total: 143 archivos Markdown.
 | `01-foundation/adrs/ADR-007-auth-module-name.md` | Decisión de arquitectura (F01). |
 | `01-foundation/adrs/ADR-008-defer-audit-to-f23.md` | Decisión de arquitectura (F01). |
 | `01-foundation/adrs/ADR-009-treasurer-password-input.md` | Decisión de arquitectura (F01). |
+| `01-foundation/adrs/ADR-010-f02-cross-feature-seams.md` | Decisión de arquitectura (F02). |
+| `01-foundation/adrs/ADR-011-form-field-info-tooltips.md` | Decisión de arquitectura (transversal de interfaz). |
+| `01-foundation/adrs/ADR-012-f03-treasurer-assignments-scope.md` | Decisión de arquitectura (F03). |
+| `01-foundation/adrs/ADR-013-f23-audit-log-scope.md` | Decisión de arquitectura (F23). |
+| `01-foundation/adrs/ADR-014-f20-cash-ledger-balance-scope.md` | Decisión de arquitectura (F20). |
 | `02-domain/DATABASE_CONSTRAINTS.md` | Documento transversal o de referencia. |
 | `02-domain/DOMAIN_GLOSSARY.md` | Documento transversal o de referencia. |
 | `02-domain/DOMAIN_MODEL.md` | Documento transversal o de referencia. |
@@ -141,6 +147,7 @@ Total: 143 archivos Markdown.
 | `05-migration/MIGRATION_EXECUTION_GUIDE.md` | Documento transversal o de referencia. |
 | `06-quality/FINANCIAL_RECONCILIATION_CHECKLIST.md` | Documento transversal o de referencia. |
 | `06-quality/RELEASE_CHECKLIST.md` | Documento transversal o de referencia. |
+| `07-templates/ADR_TEMPLATE.md` | Documento transversal o de referencia. |
 | `07-templates/FEATURE_ACCEPTANCE_TEMPLATE.md` | Documento transversal o de referencia. |
 | `07-templates/FEATURE_PLAN_TEMPLATE.md` | Documento transversal o de referencia. |
 | `07-templates/FEATURE_SPEC_TEMPLATE.md` | Documento transversal o de referencia. |

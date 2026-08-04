@@ -1,21 +1,56 @@
-# Tareas - FXX
+# Tareas - FXX Nombre de la feature
 
-## Preparación
-- [ ] Aprobar especificación.
+## 1. Preparación
 
-## Base de datos
-- [ ] Diseñar migración.
+- [ ] Revisar `spec.md` y resolver contradicciones. Implementa todos los requisitos `FR-FXX-*`.
+- [ ] Confirmar dependencias: FXX, FXX.
+- [ ] Diseñar DTOs y códigos de error.
+- [ ] Actualizar la matriz de trazabilidad.
 
-## Dominio
-- [ ] Implementar reglas.
-- [ ] Añadir pruebas unitarias.
+## 2. Base de datos
 
-## Aplicación
-- [ ] Implementar casos de uso.
-- [ ] Añadir autorización, transacciones y auditoría.
+- [ ] Agregar o ajustar entidades: Entidad.
+- [ ] Crear migración Prisma.
+- [ ] Agregar constraints e índices de concurrencia.
+- [ ] Crear factories y fixtures.
+- [ ] Probar migración desde base vacía y desde la versión anterior.
 
-## Interfaz
-- [ ] Implementar UI.
+## 3. Dominio
 
-## Verificación
-- [ ] Cumplir criterios de aceptación.
+- [ ] Implementar invariantes y funciones puras.
+- [ ] Implementar máquina de estados cuando aplique.
+- [ ] Implementar cálculos monetarios con Decimal.
+- [ ] Añadir pruebas unitarias de reglas y casos límite.
+
+## 4. Aplicación
+
+- [ ] Implementar casos de uso descritos en `plan.md`.
+- [ ] Añadir autorización por caja.
+- [ ] Añadir transacciones.
+- [ ] Integrar CashMovement si existe impacto financiero.
+- [ ] Integrar AuditEvent.
+- [ ] Añadir idempotencia o protección de concurrencia.
+
+## 5. Interfaz
+
+- [ ] Crear páginas y componentes.
+- [ ] Añadir estados de carga, vacío, error y confirmación.
+- [ ] Validar accesibilidad de formularios.
+- [ ] Verificar escritorio y móvil.
+
+## 6. Verificación
+
+- [ ] Implementar todos los escenarios de `acceptance.md`.
+- [ ] Ejecutar lint, typecheck y pruebas.
+- [ ] Ejecutar E2E del flujo principal.
+- [ ] Realizar prueba manual con datos representativos.
+- [ ] Actualizar documentación y marcar la feature como completada.
+
+---
+
+Convenciones de marcado, tal como se usan en las features ya cerradas:
+
+- `[x]` hecha.
+- `[~]` no aplica o diferida, **siempre con la razón entre paréntesis** y, si
+  corresponde, la feature que hereda la deuda y el ADR que la registra.
+- `[ ]` pendiente. Una feature no se cierra con `[ ]` abiertas.

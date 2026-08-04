@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F05-002
 
 **Escenario:** Dada una igualación incompleta, cuando se intenta activar, entonces no se consume un número.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F05-003
 
 **Escenario:** Dado un número activado después del job mensual, entonces su primera cuota se genera el mes siguiente.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

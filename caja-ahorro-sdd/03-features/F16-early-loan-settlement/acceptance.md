@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F16-002
 
 **Escenario:** Dada una liquidación en cualquier día del mes, entonces se cobra el interés mensual completo.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F16-003
 
 **Escenario:** Dado ahorro del número asociado pendiente, entonces la liquidación se bloquea.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

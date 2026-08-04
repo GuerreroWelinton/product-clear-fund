@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F25-002
 
 **Escenario:** Dado un número ajeno, entonces recibe acceso denegado.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F25-003
 
 **Escenario:** Dado un número retirado, entonces puede consultar su historial en solo lectura.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

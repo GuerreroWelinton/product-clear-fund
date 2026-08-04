@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F24-002
 
 **Escenario:** Dado un fallo parcial, cuando se reintenta, entonces completa faltantes sin duplicar.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F24-003
 
 **Escenario:** Dada una caja inactiva, entonces la generación ordinaria la omite.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 

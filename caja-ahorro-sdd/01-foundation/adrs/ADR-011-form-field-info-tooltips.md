@@ -1,4 +1,7 @@
-# ADR-011 - Tooltips de ayuda en labels de formularios
+# ADR-011 - Ayuda contextual en labels de formularios
+
+> El nombre del archivo conserva "tooltips" por estabilidad de referencias. El mecanismo
+> elegido es un Popover por clic, no un Tooltip por hover: ver la decisión.
 
 ## Estado
 Aceptado.
@@ -34,6 +37,7 @@ operativa). Los nuevos formularios deben reutilizar `FieldLabel` para campos no 
 ## Consecuencias
 - Mejor comprensión sin manuales externos; refuerza la tarea de accesibilidad de F02.
 - Copia de ayuda centralizada por campo (una sola frase, en español).
-- Coste: un primitivo y un componente compartidos; dependencia de `@base-ui/react/tooltip`
-  (ya presente).
+- Coste: un primitivo y un componente compartidos; dependencia de `@base-ui/react/popover`
+  (ya presente). No se usa `@base-ui/react/tooltip`: no existe `tooltip.tsx` en el árbol y
+  nadie lo importa.
 - No sustituye validación ni mensajes de error; es solo orientación de uso.

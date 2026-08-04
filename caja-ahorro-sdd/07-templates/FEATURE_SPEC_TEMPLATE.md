@@ -1,7 +1,10 @@
 # FXX - Nombre de la feature
 
 ## Estado
-Propuesta.
+Uno de los estados de `SDD_WORKFLOW.md`: Propuesta. | Especificada. |
+Planificada. | En desarrollo. | En validación. | Completada.
+
+Debe coincidir con la fila de la feature en `TRACEABILITY.md`.
 
 ## Fase
 

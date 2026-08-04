@@ -2,7 +2,7 @@
 
 ## Estado
 
-Propuesta para revisión.
+Completada.
 
 ## Fase
 

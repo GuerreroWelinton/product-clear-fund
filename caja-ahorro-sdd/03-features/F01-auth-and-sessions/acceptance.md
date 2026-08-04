@@ -8,19 +8,23 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+- Requisitos que verifica: `FR-F01-002`, `BR-F01-003`.
+
 ### AC-F01-002
 
 **Escenario:** Dado un usuario deshabilitado, cuando intenta iniciar sesión, entonces el acceso es rechazado.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+- Requisitos que verifica: `FR-F01-003`, `BR-F01-004`.
+
 ### AC-F01-003
 
 **Escenario:** Dado un tesorero con sesiones activas, cuando el Super Admin lo deshabilita, entonces todas sus sesiones quedan revocadas.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
+- Requisitos que verifica: `FR-F01-003`, `BR-F01-004` (la parte de revocación de sesiones activas).
 
 ## Matriz mínima de pruebas
 

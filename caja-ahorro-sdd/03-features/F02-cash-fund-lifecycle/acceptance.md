@@ -8,19 +8,23 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+- Requisitos que verifica: `FR-F02-001`, `BR-F02-002`.
+
 ### AC-F02-002
 
 **Escenario:** Dada una caja inactiva, cuando un tesorero intenta registrar una operación, entonces la operación es rechazada.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+- Requisitos que verifica: `FR-F02-003`, `BR-F02-006`.
+
 ### AC-F02-003
 
 **Escenario:** Dada una caja reactivada después de tres meses, cuando corre la recuperación, entonces se crean las cuotas faltantes sin duplicados.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
+- Requisitos que verifica: `BR-F02-007`. Diferido a F06 (ADR-010): hoy es un `it.todo`.
 
 ## Matriz mínima de pruebas
 

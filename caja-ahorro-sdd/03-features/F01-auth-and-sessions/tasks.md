@@ -31,7 +31,7 @@
 - [~] Añadir autorización por caja. (F01 usa roles globales; la asignación tesorero↔caja es F03. La autorización de administrador se verifica en servidor vía Better Auth)
 - [~] Añadir transacciones. (Sin impacto financiero; deshabilitar+revocar se resuelve con la API admin de Better Auth. Ver ADR-008)
 - [~] Integrar CashMovement si existe impacto financiero. (No hay impacto financiero en F01)
-- [~] Integrar AuditEvent. (Diferido a F23 — ver ADR-008)
+- [x] Integrar AuditEvent. (Diferido a F23 por ADR-008 y **ya entregado por F23**: los cuatro casos de uso registran evento vía `auth/application/audit.ts`.)
 - [x] Añadir idempotencia o protección de concurrencia. (Unicidad de correo `@@unique([email])`; sign-up público deshabilitado)
 
 ## 5. Interfaz

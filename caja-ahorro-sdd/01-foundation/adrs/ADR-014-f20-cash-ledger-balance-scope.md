@@ -1,4 +1,4 @@
-# ADR-014 - Alcance de F20 (libro de caja y saldos)
+# ADR-014 - F20: alcance del libro de caja y saldos
 
 ## Estado
 Aceptado.

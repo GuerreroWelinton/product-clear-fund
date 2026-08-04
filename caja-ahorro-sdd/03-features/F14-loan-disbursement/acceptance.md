@@ -8,19 +8,20 @@
 
 - Tipo sugerido: integración y E2E.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F14-002
 
 **Escenario:** Dados dos compromisos concurrentes, entonces la suma confirmada nunca supera el saldo.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
+
 ### AC-F14-003
 
 **Escenario:** Dado un desembolso cancelado, entonces el turno vuelve disponible y se libera el compromiso.
 
 - Tipo sugerido: integración.
 - Debe verificar datos persistidos, movimientos y auditoría cuando aplique.
-
 
 ## Matriz mínima de pruebas
 
