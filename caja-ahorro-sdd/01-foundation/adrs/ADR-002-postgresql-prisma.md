@@ -3,11 +3,11 @@
 ## Estado
 Aceptado.
 
+## Contexto
+Se requieren transacciones, constraints, índices parciales, decimales exactos y relaciones claras. Prisma ofrece productividad suficiente para el tamaño del proyecto.
+
 ## Decisión
 Usar PostgreSQL en Neon y Prisma ORM.
-
-## Motivo
-Se requieren transacciones, constraints, índices parciales, decimales exactos y relaciones claras. Prisma ofrece productividad suficiente para el tamaño del proyecto.
 
 ## Consecuencias
 - Migrations versionadas.

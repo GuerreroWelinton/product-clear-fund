@@ -3,11 +3,11 @@
 ## Estado
 Aceptado.
 
+## Contexto
+El volumen previsto es menor a diez usuarios administrativos y aproximadamente doscientos socios. Un monolito modular reduce despliegues, latencia y operación, sin impedir separar dominios.
+
 ## Decisión
 Implementar una sola aplicación Next.js con módulos de dominio internos.
-
-## Motivo
-El volumen previsto es menor a diez usuarios administrativos y aproximadamente doscientos socios. Un monolito modular reduce despliegues, latencia y operación, sin impedir separar dominios.
 
 ## Consecuencias
 - Una unidad de despliegue.
