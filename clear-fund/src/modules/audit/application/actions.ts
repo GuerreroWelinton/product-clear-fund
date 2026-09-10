@@ -1,6 +1,6 @@
 "use server";
 
-import { headers } from "next/headers";
+import { requestContext } from "@/lib/auth";
 
 import type { AuditEventDto, AuditEventPageDto } from "../domain/dto";
 import { AuditError, type AuditErrorCode } from "../domain/errors";
@@ -32,10 +32,6 @@ function messageFor(error: unknown): { code: string; message: string } {
     code: "F23_OPERATION_FAILED",
     message: MESSAGES.F23_OPERATION_FAILED,
   };
-}
-
-async function requestContext() {
-  return { headers: await headers() };
 }
 
 export async function listAuditEventsAction(

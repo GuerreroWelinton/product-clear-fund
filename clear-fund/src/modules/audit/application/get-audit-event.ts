@@ -1,3 +1,4 @@
+import type { RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 import { toAuditEventDto, type AuditEventDto } from "../domain/dto";
@@ -5,7 +6,6 @@ import { AuditError, F23_ERROR_CODES, mapUnexpectedError } from "../domain/error
 import { isEventVisible } from "../domain/rules";
 import { getAuditEventSchema, type GetAuditEventInput } from "../schemas";
 import { resolveScopeForCaller } from "./authorize";
-import type { RequestContext } from "./context";
 
 // FR-F23-003: one event in full, so previous and new values can be compared.
 //

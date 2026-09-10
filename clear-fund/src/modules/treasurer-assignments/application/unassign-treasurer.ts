@@ -1,3 +1,4 @@
+import type { RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { AUDIT_ACTIONS, AUDIT_ENTITY_TYPES } from "@/modules/audit/domain/event-types";
 import { buildChangeSet } from "@/modules/audit/domain/rules";
@@ -13,7 +14,6 @@ import { AssignmentError, F03_ERROR_CODES, mapUnexpectedError } from "../domain/
 import { resolveUnassignAction } from "../domain/rules";
 import { unassignTreasurerSchema, type UnassignTreasurerInput } from "../schemas";
 import { requireSuperAdmin } from "./authorize";
-import type { RequestContext } from "./context";
 
 // FR-F03-003 / BR-F03-004: a Super Admin withdraws an assignment. This is a
 // soft-delete — the row is flipped to REVOKED, never deleted — so historical

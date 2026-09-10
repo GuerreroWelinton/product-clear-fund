@@ -1,3 +1,4 @@
+import type { RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { buildChangeSet } from "@/modules/audit/domain/rules";
 
@@ -15,7 +16,6 @@ import {
   recordCashFundEvent,
 } from "./audit";
 import { requireSuperAdmin } from "./authorize";
-import type { RequestContext } from "./context";
 
 // FR-F02-003 / BR-F02-006: activates a cash fund. Handles both DRAFT->ACTIVE
 // (initial activation) and INACTIVE->ACTIVE (reactivation, BR-F02-007).

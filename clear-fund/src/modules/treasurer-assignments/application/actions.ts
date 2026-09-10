@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
+
+import { requestContext } from "@/lib/auth";
+import type { ActionResult } from "@/lib/actions";
 
 import type { FundTreasurerDto } from "../domain/dto";
 import { AssignmentError, type AssignmentErrorCode } from "../domain/errors";
@@ -15,10 +17,6 @@ import {
   listFundAssignments,
   unassignTreasurer,
 } from ".";
-
-export type ActionResult =
-  | { ok: true }
-  | { ok: false; code: string; message: string };
 
 export type ListResult =
   | { ok: true; treasurers: FundTreasurerDto[] }
@@ -43,10 +41,6 @@ function messageFor(error: unknown): { code: string; message: string } {
     code: "F03_OPERATION_FAILED",
     message: MESSAGES.F03_OPERATION_FAILED,
   };
-}
-
-async function requestContext() {
-  return { headers: await headers() };
 }
 
 export async function assignTreasurerAction(

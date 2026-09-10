@@ -1,4 +1,4 @@
-import { auth, ROLES } from "@/lib/auth";
+import { auth, ROLES, type RequestContext } from "@/lib/auth";
 // Imported by concrete path, not through the module barrel: the audited features
 // import the audit writer, so going through barrels here would close an import
 // cycle (treasurer-assignments -> audit -> treasurer-assignments).
@@ -6,7 +6,6 @@ import { listAssignedCashFunds } from "@/modules/treasurer-assignments/applicati
 
 import { AuditError, F23_ERROR_CODES } from "../domain/errors";
 import { resolveAuditScope, type AuditScope } from "../domain/rules";
-import type { RequestContext } from "./context";
 
 type Session = Awaited<ReturnType<typeof auth.api.getSession>>;
 

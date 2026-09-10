@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth, type RequestContext } from "@/lib/auth";
 import { buildChangeSet } from "@/modules/audit/domain/rules";
 
 import { toUserDto, type UserDto } from "../domain/dto";
@@ -10,7 +10,6 @@ import {
   recordUserEvent,
   resolveAuditActor,
 } from "./audit";
-import type { RequestContext } from "./context";
 
 // Re-enables a previously disabled account (unban). The user can sign in again;
 // they still have no active sessions until they do.

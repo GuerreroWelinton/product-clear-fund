@@ -50,6 +50,7 @@ src/
     dates/
     permissions/
     observability/
+    actions/
   components/
   styles/
 prisma/

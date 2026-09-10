@@ -1,3 +1,5 @@
+import { createUnexpectedErrorMapper } from "@/lib/actions";
+
 // Stable, F20-prefixed error codes for the cash-ledger-balance feature. This
 // is the contract the UI and API layers depend on; callers never couple to
 // Prisma error shapes or internal exception types.
@@ -29,13 +31,8 @@ export class LedgerError extends Error {
 // Funnel for unexpected failures (Prisma errors, etc.) so callers only ever
 // see stable F20 codes; a LedgerError raised deliberately passes through
 // untouched.
-export function mapUnexpectedError(error: unknown): LedgerError {
-  if (error instanceof LedgerError) {
-    return error;
-  }
-  return new LedgerError(
-    F20_ERROR_CODES.OPERATION_FAILED,
-    error instanceof Error ? error.message : "Ledger operation failed",
-    { cause: error },
-  );
-}
+export const mapUnexpectedError = createUnexpectedErrorMapper(
+  LedgerError,
+  F20_ERROR_CODES.OPERATION_FAILED,
+  "Ledger operation failed",
+);

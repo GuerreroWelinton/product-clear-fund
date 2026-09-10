@@ -6,6 +6,8 @@ import { adminAc, defaultStatements } from "better-auth/plugins/admin/access";
 
 import { prisma } from "@/lib/db";
 
+export { requestContext, type RequestContext } from "./request-context";
+
 // Global roles for the MVP (BR-F01-005). MEMBER is reserved for the future
 // member portal (F25) and is intentionally not defined yet.
 export const ROLES = {

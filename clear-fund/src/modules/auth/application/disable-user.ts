@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth, type RequestContext } from "@/lib/auth";
 import { buildChangeSet } from "@/modules/audit/domain/rules";
 
 import { toUserDto, type UserDto } from "../domain/dto";
@@ -10,7 +10,6 @@ import {
   recordUserEvent,
   resolveAuditActor,
 } from "./audit";
-import type { RequestContext } from "./context";
 
 // FR-F01-003 / BR-F01-004: disabling an account bans it AND revokes every
 // active session so the user is locked out immediately.

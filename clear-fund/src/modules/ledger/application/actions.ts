@@ -1,6 +1,6 @@
 "use server";
 
-import { headers } from "next/headers";
+import { requestContext } from "@/lib/auth";
 
 import type { CashFundBalanceDto, CashMovementPageDto } from "../domain/dto";
 import { F20_ERROR_CODES, LedgerError, type LedgerErrorCode } from "../domain/errors";
@@ -35,10 +35,6 @@ function toFailure(error: unknown): { code: string; message: string } {
     code: F20_ERROR_CODES.OPERATION_FAILED,
     message: MESSAGES.F20_OPERATION_FAILED,
   };
-}
-
-async function requestContext() {
-  return { headers: await headers() };
 }
 
 export async function getCashFundBalanceAction(

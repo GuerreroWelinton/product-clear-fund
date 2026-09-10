@@ -1,8 +1,7 @@
-import { auth, ROLES } from "@/lib/auth";
+import { auth, ROLES, type RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 import { CashFundError, F02_ERROR_CODES } from "../domain/errors";
-import type { RequestContext } from "./context";
 
 type Session = Awaited<ReturnType<typeof auth.api.getSession>>;
 

@@ -1,4 +1,4 @@
-export type { RequestContext } from "./context";
+export type { RequestContext } from "@/lib/auth";
 export { createCashFund } from "./create-cash-fund";
 export { updateCashFundDraft } from "./update-cash-fund-draft";
 export { activateCashFund } from "./activate-cash-fund";

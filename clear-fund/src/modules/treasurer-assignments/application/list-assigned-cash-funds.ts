@@ -1,9 +1,8 @@
-import { ROLES } from "@/lib/auth";
+import { ROLES, type RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 import { mapUnexpectedError } from "../domain/errors";
 import { requireSession } from "./authorize";
-import type { RequestContext } from "./context";
 
 // FR-F03-002 / BR-F03-005: the set of cash-fund ids the caller may see. A
 // Super Admin has global access (all funds); a treasurer sees only funds with

@@ -1,3 +1,5 @@
+import { createUnexpectedErrorMapper } from "@/lib/actions";
+
 // Stable, F23-prefixed error codes for the audit-log feature. This is the
 // contract the UI and API layers depend on; callers never couple to Prisma
 // error shapes or internal exception types.
@@ -33,13 +35,8 @@ export class AuditError extends Error {
 
 // Funnel for unexpected failures (Prisma errors, etc.) so callers only ever see
 // stable F23 codes; an AuditError raised deliberately passes through untouched.
-export function mapUnexpectedError(error: unknown): AuditError {
-  if (error instanceof AuditError) {
-    return error;
-  }
-  return new AuditError(
-    F23_ERROR_CODES.OPERATION_FAILED,
-    error instanceof Error ? error.message : "Audit operation failed",
-    { cause: error },
-  );
-}
+export const mapUnexpectedError = createUnexpectedErrorMapper(
+  AuditError,
+  F23_ERROR_CODES.OPERATION_FAILED,
+  "Audit operation failed",
+);

@@ -1,3 +1,4 @@
+import type { RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { buildChangeSet } from "@/modules/audit/domain/rules";
 
@@ -14,7 +15,6 @@ import {
   recordCashFundEvent,
 } from "./audit";
 import { requireSuperAdminOrAssignedTreasurer } from "./authorize";
-import type { RequestContext } from "./context";
 
 // FR-F02-002 / BR-F02-005: a Super Admin or a treasurer with an ACTIVE
 // assignment to this fund can edit its operational config (recommendedDay/

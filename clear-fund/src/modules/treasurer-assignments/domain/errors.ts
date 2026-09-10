@@ -1,3 +1,5 @@
+import { createUnexpectedErrorMapper } from "@/lib/actions";
+
 // Stable, F03-prefixed error codes for the treasurer-assignments feature. This
 // is the contract the UI and API layers depend on; callers never couple to
 // Prisma error shapes or internal exception types.
@@ -31,13 +33,8 @@ export class AssignmentError extends Error {
 // Funnel for unexpected failures (Prisma errors, etc.) so callers only ever
 // see stable F03 codes; an AssignmentError raised deliberately passes through
 // untouched.
-export function mapUnexpectedError(error: unknown): AssignmentError {
-  if (error instanceof AssignmentError) {
-    return error;
-  }
-  return new AssignmentError(
-    F03_ERROR_CODES.OPERATION_FAILED,
-    error instanceof Error ? error.message : "Treasurer assignment operation failed",
-    { cause: error },
-  );
-}
+export const mapUnexpectedError = createUnexpectedErrorMapper(
+  AssignmentError,
+  F03_ERROR_CODES.OPERATION_FAILED,
+  "Treasurer assignment operation failed",
+);

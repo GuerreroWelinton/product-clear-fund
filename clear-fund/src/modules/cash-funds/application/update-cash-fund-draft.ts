@@ -1,3 +1,4 @@
+import type { RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { buildChangeSet } from "@/modules/audit/domain/rules";
 
@@ -19,7 +20,6 @@ import {
   recordCashFundEvent,
 } from "./audit";
 import { requireSuperAdmin } from "./authorize";
-import type { RequestContext } from "./context";
 
 // FR-F02-001 / BR-F02-002/003/004: while a fund is DRAFT, a Super Admin can
 // still adjust its structural config (name/phrase/logoKey/monthlySavingAmount/

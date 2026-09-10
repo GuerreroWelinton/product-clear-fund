@@ -1,3 +1,4 @@
+import type { RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 import { toAuditEventDto, type AuditEventPageDto } from "../domain/dto";
@@ -5,7 +6,6 @@ import { AuditError, F23_ERROR_CODES, mapUnexpectedError } from "../domain/error
 import type { AuditScope } from "../domain/rules";
 import { listAuditEventsSchema, type ListAuditEventsInput } from "../schemas";
 import { resolveScopeForCaller } from "./authorize";
-import type { RequestContext } from "./context";
 
 // Translates the authorization scope into a Prisma filter.
 //

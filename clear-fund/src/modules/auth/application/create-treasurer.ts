@@ -1,11 +1,10 @@
-import { auth, ROLES } from "@/lib/auth";
+import { auth, ROLES, type RequestContext } from "@/lib/auth";
 import { buildCreationChangeSet } from "@/modules/audit/domain/rules";
 
 import { toUserDto, type UserDto } from "../domain/dto";
 import { AuthError, F01_ERROR_CODES, mapBetterAuthError } from "../domain/errors";
 import { createTreasurerSchema, type CreateTreasurerInput } from "../schemas";
 import { AUDIT_ACTIONS, recordUserEvent, resolveAuditActor } from "./audit";
-import type { RequestContext } from "./context";
 
 // FR-F01-001: a Super Admin creates treasurer accounts. Better Auth's admin
 // plugin enforces (server-side, from the caller's headers) that only an admin

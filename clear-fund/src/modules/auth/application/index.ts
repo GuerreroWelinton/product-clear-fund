@@ -1,4 +1,4 @@
-export type { RequestContext } from "./context";
+export type { RequestContext } from "@/lib/auth";
 export { createTreasurer } from "./create-treasurer";
 export { disableUser } from "./disable-user";
 export { enableUser } from "./enable-user";
