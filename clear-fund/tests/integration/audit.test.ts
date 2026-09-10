@@ -9,6 +9,7 @@ import {
   deactivateCashFund,
   updateOperationalConfig,
 } from "@/modules/cash-funds/application";
+import { F02_ERROR_CODES } from "@/modules/cash-funds/domain/errors";
 import {
   assignTreasurer,
   unassignTreasurer,
@@ -282,7 +283,7 @@ describe("F23 audit log (integration)", () => {
     // Editing operational config is invalid while the fund is INACTIVE.
     await expect(
       updateOperationalConfig({ cashFundId: fund.id, riskThreshold: 9 }, ctx),
-    ).rejects.toBeTruthy();
+    ).rejects.toMatchObject({ code: F02_ERROR_CODES.CASH_FUND_INACTIVE });
 
     expect(await prisma.auditEvent.count()).toBe(before);
   });
