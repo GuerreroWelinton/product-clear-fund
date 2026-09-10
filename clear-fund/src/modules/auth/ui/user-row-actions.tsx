@@ -1,9 +1,7 @@
 "use client";
 
 import { MoreHorizontalIcon } from "lucide-react";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { toast } from "sonner";
+import { useState } from "react";
 
 import {
   AlertDialog,
@@ -22,12 +20,12 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useActionRunner } from "@/hooks/use-action-runner";
 import { cn } from "@/lib/utils";
 import {
   disableUserAction,
   enableUserAction,
   revokeUserSessionsAction,
-  type ActionResult,
 } from "@/modules/auth/application/actions";
 
 interface UserRowActionsProps {
@@ -43,21 +41,8 @@ export function UserRowActions({
   banned,
   isSelf,
 }: UserRowActionsProps) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const { pending, run } = useActionRunner();
   const [confirmDisable, setConfirmDisable] = useState(false);
-
-  function run(action: () => Promise<ActionResult>, successText: string) {
-    startTransition(async () => {
-      const result = await action();
-      if (result.ok) {
-        toast.success(successText);
-        router.refresh();
-      } else {
-        toast.error(result.message);
-      }
-    });
-  }
 
   // A Super Admin cannot act destructively on their own account.
   if (isSelf) {

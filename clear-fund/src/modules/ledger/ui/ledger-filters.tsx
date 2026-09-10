@@ -1,9 +1,11 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { useFilterQuery } from "@/hooks/use-filter-query";
 import {
   CASH_MOVEMENT_DIRECTION_LABELS,
   CASH_MOVEMENT_TYPE_LABELS,
@@ -31,18 +33,10 @@ export function LedgerFilters({
   selectedToDate,
 }: LedgerFiltersProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const applyFilterParam = useFilterQuery();
 
   function apply(key: string, value: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value === "") {
-      params.delete(key);
-    } else {
-      params.set(key, value);
-    }
-    // Any filter change invalidates the current page number.
-    params.delete("page");
-    const query = params.toString();
+    const query = applyFilterParam(key, value);
     router.push(
       query
         ? `/cash-funds/${cashFundId}/ledger?${query}`
@@ -50,16 +44,13 @@ export function LedgerFilters({
     );
   }
 
-  const selectClass =
-    "border-input bg-background h-9 w-full rounded-full border px-3 text-sm sm:w-48";
-
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end sm:flex-wrap">
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="ledger-direction-filter">Dirección</Label>
-        <select
+        <Select
           id="ledger-direction-filter"
-          className={selectClass}
+          className="sm:w-48"
           value={selectedDirection}
           onChange={(event) => apply("direction", event.target.value)}
         >
@@ -69,14 +60,14 @@ export function LedgerFilters({
               {label}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="ledger-type-filter">Tipo de movimiento</Label>
-        <select
+        <Select
           id="ledger-type-filter"
-          className={selectClass}
+          className="sm:w-48"
           value={selectedMovementType}
           onChange={(event) => apply("movementType", event.target.value)}
         >
@@ -86,7 +77,7 @@ export function LedgerFilters({
               {label}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       <div className="flex flex-col gap-1.5">

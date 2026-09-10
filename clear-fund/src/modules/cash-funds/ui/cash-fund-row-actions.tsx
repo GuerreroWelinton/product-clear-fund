@@ -2,9 +2,7 @@
 
 import { MoreHorizontalIcon } from "lucide-react";
 import Link from "next/link";
-import { useRouter } from "next/navigation";
-import { useState, useTransition } from "react";
-import { toast } from "sonner";
+import { useState } from "react";
 
 import {
   AlertDialog,
@@ -23,11 +21,11 @@ import {
   DropdownMenuItem,
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
+import { useActionRunner } from "@/hooks/use-action-runner";
 import { cn } from "@/lib/utils";
 import {
   activateCashFundAction,
   deactivateCashFundAction,
-  type ActionResult,
 } from "@/modules/cash-funds/application/actions";
 import type { CashFundDto } from "@/modules/cash-funds/domain/dto";
 import { EditCashFundDraftDialog } from "@/modules/cash-funds/ui/edit-cash-fund-draft-dialog";
@@ -45,25 +43,12 @@ export function CashFundRowActions({
   isSuperAdmin,
   canEditConfig,
 }: CashFundRowActionsProps) {
-  const router = useRouter();
-  const [pending, startTransition] = useTransition();
+  const { pending, run } = useActionRunner();
   const [editOpen, setEditOpen] = useState(false);
   const [configOpen, setConfigOpen] = useState(false);
   const [manageOpen, setManageOpen] = useState(false);
   const [confirmActivate, setConfirmActivate] = useState(false);
   const [confirmDeactivate, setConfirmDeactivate] = useState(false);
-
-  function run(action: () => Promise<ActionResult>, successText: string) {
-    startTransition(async () => {
-      const result = await action();
-      if (result.ok) {
-        toast.success(successText);
-        router.refresh();
-      } else {
-        toast.error(result.message);
-      }
-    });
-  }
 
   const canEditDraft = isSuperAdmin && fund.status === "DRAFT";
   const canOpenConfig = canEditConfig && fund.status === "ACTIVE";

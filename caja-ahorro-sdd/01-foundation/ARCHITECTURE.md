@@ -52,6 +52,7 @@ src/
     observability/
     actions/
   components/
+  hooks/
   styles/
 prisma/
   schema.prisma
