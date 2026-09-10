@@ -17,6 +17,7 @@ import {
 import { FieldLabel } from "@/components/ui/field-label";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MONEY_PATTERN } from "@/lib/money";
 import { updateCashFundDraftAction } from "@/modules/cash-funds/application/actions";
 import type { CashFundDto } from "@/modules/cash-funds/domain/dto";
 
@@ -25,8 +26,6 @@ interface EditCashFundDraftDialogProps {
   open: boolean;
   onOpenChange: (open: boolean) => void;
 }
-
-const MONEY_PATTERN = /^\d+(\.\d{1,2})?$/;
 
 function toDateInputValue(isoDate: string | null): string {
   if (!isoDate) {

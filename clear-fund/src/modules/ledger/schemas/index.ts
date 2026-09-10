@@ -1,5 +1,7 @@
 import { z } from "zod";
 
+import { isoDateSchema } from "@/lib/dates";
+
 import { CASH_MOVEMENT_DIRECTIONS } from "../domain/movement-types";
 
 // Page size is capped so a caller cannot ask for the whole ledger in one
@@ -9,7 +11,7 @@ export const LEDGER_PAGE_SIZE_DEFAULT = 25;
 
 // ISO calendar date (YYYY-MM-DD); occurredAt filtering happens at day
 // boundaries, not exact instants.
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date");
+const isoDate = isoDateSchema;
 
 const cashMovementDirection = z.enum([
   CASH_MOVEMENT_DIRECTIONS.IN,
