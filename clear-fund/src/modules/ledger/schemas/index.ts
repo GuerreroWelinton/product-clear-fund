@@ -52,3 +52,10 @@ export const getCashFundBalanceSchema = z.object({
   cashFundId: z.uuid(),
 });
 export type GetCashFundBalanceInput = z.infer<typeof getCashFundBalanceSchema>;
+
+// The ledger page header (finding 1, pass 2): just enough to name the fund
+// the caller is looking at.
+export const getCashFundHeaderSchema = z.object({
+  cashFundId: z.uuid(),
+});
+export type GetCashFundHeaderInput = z.infer<typeof getCashFundHeaderSchema>;

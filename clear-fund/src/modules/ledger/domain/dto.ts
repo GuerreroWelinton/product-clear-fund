@@ -75,3 +75,10 @@ export interface CashFundBalanceDto {
   committedBalance: string;
   freeBalance: string;
 }
+
+// The ledger page header (finding 1, pass 2): just enough to name the fund,
+// nothing structural — that belongs to cash-funds/application's own DTO.
+export interface CashFundHeaderDto {
+  cashFundId: string;
+  name: string;
+}

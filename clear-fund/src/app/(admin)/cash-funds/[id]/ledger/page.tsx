@@ -20,9 +20,12 @@ import {
 } from "@/components/ui/table";
 import { auth } from "@/lib/auth";
 import { BUSINESS_TIME_ZONE } from "@/lib/dates";
-import { prisma } from "@/lib/db";
 import { formatMoneyDisplay } from "@/lib/money";
-import { getCashFundBalance, listCashMovements } from "@/modules/ledger/application";
+import {
+  getCashFundBalance,
+  getCashFundHeader,
+  listCashMovements,
+} from "@/modules/ledger/application";
 import { F20_ERROR_CODES, LedgerError } from "@/modules/ledger/domain/errors";
 import {
   cashMovementSourceTypeLabel,
@@ -100,10 +103,16 @@ export default async function CashFundLedgerPage({
       ...(selectedToDate ? { toDate: selectedToDate } : {}),
       ...(selectedPageSize ? { pageSize: selectedPageSize } : {}),
     };
-    [balance, movementsPage] = await Promise.all([
+    let header: Awaited<ReturnType<typeof getCashFundHeader>>;
+    [balance, movementsPage, header] = await Promise.all([
       getCashFundBalance({ cashFundId }, ctx),
       listCashMovements({ ...baseInput, page }, ctx),
+      // Authorizes itself the same way (requireSuperAdminOrAssignedTreasurer,
+      // same cashFundId): if any of the three rejects, Promise.all rejects
+      // and the fund's name is never disclosed to the caller.
+      getCashFundHeader({ cashFundId }, ctx),
     ]);
+    fundName = header.name;
 
     // Finding 4.b: an out-of-range page (e.g. ?page=999 with only 3 results)
     // must not strand the caller on an empty view — refetch the clamped page
@@ -118,14 +127,6 @@ export default async function CashFundLedgerPage({
         ctx,
       );
     }
-
-    // Only after the use cases authorized the caller: naming the fund before
-    // that would disclose a fund the caller may not see.
-    const fund = await prisma.cashFund.findUnique({
-      where: { id: cashFundId },
-      select: { name: true },
-    });
-    fundName = fund?.name ?? null;
   } catch (caught) {
     // Functional message only; internals never reach the user.
     error = messageForError(caught);
