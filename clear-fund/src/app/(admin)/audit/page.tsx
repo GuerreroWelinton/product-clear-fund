@@ -5,9 +5,9 @@ import { Badge } from "@/components/ui/badge";
 import {
   PaginationNav,
   buildPageHref,
-  clampPage,
   computeTotalPages,
   firstValue,
+  resolvePagePlan,
 } from "@/components/ui/pagination";
 import {
   Table,
@@ -84,20 +84,6 @@ export default async function AuditPage({
       { ...baseInput, page },
       { headers: requestHeaders },
     );
-
-    // Finding 4.b: an out-of-range page (e.g. ?page=999 with only 3 results)
-    // must not strand the caller on an empty view — refetch the clamped page
-    // when the requested one falls outside the range the data actually has.
-    const clampedPage = clampPage(
-      page,
-      computeTotalPages(result.total, result.pageSize),
-    );
-    if (clampedPage !== result.page) {
-      result = await listAuditEvents(
-        { ...baseInput, page: clampedPage },
-        { headers: requestHeaders },
-      );
-    }
   } catch (caught) {
     // Functional message only; internals never reach the user.
     error =
@@ -141,8 +127,6 @@ export default async function AuditPage({
     );
   }
 
-  const totalPages = computeTotalPages(result.total, result.pageSize);
-
   function pageHref(target: number): string {
     return buildPageHref(
       "/audit",
@@ -150,6 +134,20 @@ export default async function AuditPage({
       target,
       selectedPageSize,
     );
+  }
+
+  const totalPages = computeTotalPages(result.total, result.pageSize);
+
+  // Finding 4.b follow-up: an out-of-range page (e.g. ?page=999 with only 3
+  // results) must not strand the caller on data that mismatches the URL —
+  // redirect to the canonical URL for the in-range page instead of quietly
+  // rendering different data than `?page=` claims. This sits outside the
+  // try/catch above on purpose: `redirect()` works by throwing, and the
+  // catch there is scoped to the fetch's own errors — it would otherwise
+  // swallow the redirect and render the error state instead of navigating.
+  const plan = resolvePagePlan(page, totalPages);
+  if (plan.kind === "redirect") {
+    redirect(pageHref(plan.page));
   }
 
   return (

@@ -142,6 +142,24 @@ function clampPage(page: number, totalPages: number): number {
   return page;
 }
 
+// The render-vs-redirect decision for an out-of-range page. Pulled out as a
+// pure function so it is unit-testable on its own (pages are not rendered by
+// any test in this project): given the requested page and the range the data
+// actually has, either the request is already canonical ("render") or it
+// names the in-range page the caller must be redirected to instead of being
+// silently served different data than the URL claims.
+//
+// Convergence: `clampPage` is idempotent (clamping an already in-range page
+// returns it unchanged), so replaying this function with a redirect's own
+// target page and the same totalPages always yields "render" — a redirect
+// never bounces more than once. See the "converges" test below.
+type PagePlan = { kind: "render" } | { kind: "redirect"; page: number };
+
+function resolvePagePlan(page: number, totalPages: number): PagePlan {
+  const clamped = clampPage(page, totalPages);
+  return clamped === page ? { kind: "render" } : { kind: "redirect", page: clamped };
+}
+
 export {
   PageLink,
   PaginationNav,
@@ -149,4 +167,6 @@ export {
   buildPageHref,
   computeTotalPages,
   clampPage,
+  resolvePagePlan,
 };
+export type { PagePlan };
