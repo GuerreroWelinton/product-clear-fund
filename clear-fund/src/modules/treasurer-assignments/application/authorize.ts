@@ -1,7 +1,6 @@
-import { auth, ROLES } from "@/lib/auth";
+import { auth, ROLES, type RequestContext } from "@/lib/auth";
 
 import { AssignmentError, F03_ERROR_CODES } from "../domain/errors";
-import type { RequestContext } from "./context";
 
 type Session = Awaited<ReturnType<typeof auth.api.getSession>>;
 

@@ -1,4 +1,4 @@
-import { ROLES } from "@/lib/auth";
+import { ROLES, type RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 import type { FundTreasurerDto } from "../domain/dto";
@@ -8,7 +8,6 @@ import {
   type ListFundAssignmentsInput,
 } from "../schemas";
 import { requireSuperAdmin } from "./authorize";
-import type { RequestContext } from "./context";
 
 // Powers the management UI: every treasurer paired with whether they currently
 // hold an ACTIVE assignment to the given fund. Super Admin only (BR-F03-001).

@@ -1,3 +1,4 @@
+import type { RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { buildChangeSet } from "@/modules/audit/domain/rules";
 
@@ -14,7 +15,6 @@ import {
   recordCashFundEvent,
 } from "./audit";
 import { requireSuperAdmin } from "./authorize";
-import type { RequestContext } from "./context";
 
 // FR-F02-003 / BR-F02-006: only ACTIVE -> INACTIVE is a valid deactivation.
 export async function deactivateCashFund(

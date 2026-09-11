@@ -1,10 +1,15 @@
-import Link from "next/link";
 import { headers } from "next/headers";
 import { redirect } from "next/navigation";
 
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { Button, buttonVariants } from "@/components/ui/button";
+import {
+  PaginationNav,
+  buildPageHref,
+  computeTotalPages,
+  firstValue,
+  resolvePagePlan,
+} from "@/components/ui/pagination";
 import {
   Table,
   TableBody,
@@ -15,9 +20,12 @@ import {
 } from "@/components/ui/table";
 import { auth } from "@/lib/auth";
 import { BUSINESS_TIME_ZONE } from "@/lib/dates";
-import { prisma } from "@/lib/db";
-import { cn } from "@/lib/utils";
-import { getCashFundBalance, listCashMovements } from "@/modules/ledger/application";
+import { formatMoneyDisplay } from "@/lib/money";
+import {
+  getCashFundBalance,
+  getCashFundHeader,
+  listCashMovements,
+} from "@/modules/ledger/application";
 import { F20_ERROR_CODES, LedgerError } from "@/modules/ledger/domain/errors";
 import {
   cashMovementSourceTypeLabel,
@@ -25,56 +33,12 @@ import {
 } from "@/modules/ledger/domain/movement-types";
 import { LedgerFilters } from "@/modules/ledger/ui/ledger-filters";
 
-const currencyFormatter = new Intl.NumberFormat("es-EC", {
-  style: "currency",
-  currency: "USD",
-});
-
 const dateTimeFormatter = new Intl.DateTimeFormat("es-EC", {
   dateStyle: "short",
   timeStyle: "short",
   // Same zone the date filters resolve in; timestamps are stored UTC.
   timeZone: BUSINESS_TIME_ZONE,
 });
-
-function formatAmount(amount: string, currency: string): string {
-  const value = Number(amount);
-  if (currency === "USD") {
-    return currencyFormatter.format(value);
-  }
-  return `${value.toFixed(2)} ${currency}`;
-}
-
-// A pagination control (mirrors /audit's PageLink): a plain anchor wearing
-// button styles, not Button+Link, so paginating keeps link semantics.
-function PageLink({
-  href,
-  disabled,
-  children,
-}: {
-  href: string;
-  disabled: boolean;
-  children: React.ReactNode;
-}) {
-  if (disabled) {
-    return (
-      <Button variant="outline" size="sm" className="rounded-full" disabled>
-        {children}
-      </Button>
-    );
-  }
-  return (
-    <Link
-      href={href}
-      className={cn(
-        buttonVariants({ variant: "outline", size: "sm" }),
-        "rounded-full",
-      )}
-    >
-      {children}
-    </Link>
-  );
-}
 
 function messageForError(caught: unknown): string {
   if (!(caught instanceof LedgerError)) {
@@ -90,13 +54,6 @@ function messageForError(caught: unknown): string {
     default:
       return "No se pudo cargar el libro de caja. Intentá de nuevo.";
   }
-}
-
-function firstValue(value: string | string[] | undefined): string {
-  if (Array.isArray(value)) {
-    return value[0] ?? "";
-  }
-  return value ?? "";
 }
 
 // BR-F20-001: one fund, one total balance — meaningless without a specific
@@ -124,6 +81,8 @@ export default async function CashFundLedgerPage({
   const selectedToDate = firstValue(query.toDate);
   const pageParam = Number.parseInt(firstValue(query.page), 10);
   const page = Number.isFinite(pageParam) && pageParam > 0 ? pageParam : 1;
+  // Deliberately not exposed in the UI — see src/lib/pagination for why
+  // reading it straight from the URL is safe.
   const selectedPageSize = firstValue(query.pageSize);
 
   const ctx = { headers: requestHeaders };
@@ -134,31 +93,26 @@ export default async function CashFundLedgerPage({
   let error: string | null = null;
 
   try {
-    [balance, movementsPage] = await Promise.all([
+    const baseInput = {
+      cashFundId,
+      ...(selectedDirection
+        ? { direction: selectedDirection as "IN" | "OUT" }
+        : {}),
+      ...(selectedMovementType ? { movementType: selectedMovementType } : {}),
+      ...(selectedFromDate ? { fromDate: selectedFromDate } : {}),
+      ...(selectedToDate ? { toDate: selectedToDate } : {}),
+      ...(selectedPageSize ? { pageSize: selectedPageSize } : {}),
+    };
+    let header: Awaited<ReturnType<typeof getCashFundHeader>>;
+    [balance, movementsPage, header] = await Promise.all([
       getCashFundBalance({ cashFundId }, ctx),
-      listCashMovements(
-        {
-          cashFundId,
-          ...(selectedDirection
-            ? { direction: selectedDirection as "IN" | "OUT" }
-            : {}),
-          ...(selectedMovementType ? { movementType: selectedMovementType } : {}),
-          ...(selectedFromDate ? { fromDate: selectedFromDate } : {}),
-          ...(selectedToDate ? { toDate: selectedToDate } : {}),
-          ...(selectedPageSize ? { pageSize: selectedPageSize } : {}),
-          page,
-        },
-        ctx,
-      ),
+      listCashMovements({ ...baseInput, page }, ctx),
+      // Authorizes itself the same way (requireSuperAdminOrAssignedTreasurer,
+      // same cashFundId): if any of the three rejects, Promise.all rejects
+      // and the fund's name is never disclosed to the caller.
+      getCashFundHeader({ cashFundId }, ctx),
     ]);
-
-    // Only after the use cases authorized the caller: naming the fund before
-    // that would disclose a fund the caller may not see.
-    const fund = await prisma.cashFund.findUnique({
-      where: { id: cashFundId },
-      select: { name: true },
-    });
-    fundName = fund?.name ?? null;
+    fundName = header.name;
   } catch (caught) {
     // Functional message only; internals never reach the user.
     error = messageForError(caught);
@@ -180,20 +134,32 @@ export default async function CashFundLedgerPage({
     );
   }
 
-  const totalPages = Math.max(1, Math.ceil(movementsPage.total / movementsPage.pageSize));
-
   function pageHref(target: number): string {
-    const next = new URLSearchParams();
-    if (selectedDirection) next.set("direction", selectedDirection);
-    if (selectedMovementType) next.set("movementType", selectedMovementType);
-    if (selectedFromDate) next.set("fromDate", selectedFromDate);
-    if (selectedToDate) next.set("toDate", selectedToDate);
-    if (selectedPageSize) next.set("pageSize", selectedPageSize);
-    if (target > 1) next.set("page", String(target));
-    const query = next.toString();
-    return query
-      ? `/cash-funds/${cashFundId}/ledger?${query}`
-      : `/cash-funds/${cashFundId}/ledger`;
+    return buildPageHref(
+      `/cash-funds/${cashFundId}/ledger`,
+      {
+        direction: selectedDirection,
+        movementType: selectedMovementType,
+        fromDate: selectedFromDate,
+        toDate: selectedToDate,
+      },
+      target,
+      selectedPageSize,
+    );
+  }
+
+  const totalPages = computeTotalPages(movementsPage.total, movementsPage.pageSize);
+
+  // Finding 4.b follow-up: an out-of-range page (e.g. ?page=999 with only 3
+  // results) must not strand the caller on data that mismatches the URL —
+  // redirect to the canonical URL for the in-range page instead of quietly
+  // rendering different data than `?page=` claims. This already sits outside
+  // the try/catch above: `redirect()` works by throwing, and that catch is
+  // scoped to the fetch's own errors — it would otherwise swallow the
+  // redirect and render the error state instead of navigating.
+  const plan = resolvePagePlan(page, totalPages);
+  if (plan.kind === "redirect") {
+    redirect(pageHref(plan.page));
   }
 
   return (
@@ -213,7 +179,7 @@ export default async function CashFundLedgerPage({
             <CardTitle>Saldo contable</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-medium">
-            {formatAmount(balance.accountingBalance, balance.currency)}
+            {formatMoneyDisplay(balance.accountingBalance, balance.currency)}
           </CardContent>
         </Card>
         <Card>
@@ -221,7 +187,7 @@ export default async function CashFundLedgerPage({
             <CardTitle>Saldo comprometido</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-medium">
-            {formatAmount(balance.committedBalance, balance.currency)}
+            {formatMoneyDisplay(balance.committedBalance, balance.currency)}
           </CardContent>
         </Card>
         <Card>
@@ -229,7 +195,7 @@ export default async function CashFundLedgerPage({
             <CardTitle>Saldo libre</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-medium">
-            {formatAmount(balance.freeBalance, balance.currency)}
+            {formatMoneyDisplay(balance.freeBalance, balance.currency)}
           </CardContent>
         </Card>
       </div>
@@ -283,7 +249,7 @@ export default async function CashFundLedgerPage({
                   </TableCell>
                   <TableCell className="break-all">{movement.actorEmail}</TableCell>
                   <TableCell className="text-right">
-                    {formatAmount(movement.amount, balance.currency)}
+                    {formatMoneyDisplay(movement.amount, balance.currency)}
                   </TableCell>
                 </TableRow>
               ))
@@ -292,30 +258,14 @@ export default async function CashFundLedgerPage({
         </Table>
       </div>
 
-      {movementsPage.total > movementsPage.pageSize ? (
-        <nav
-          aria-label="Paginación del libro de caja"
-          className="flex items-center justify-between gap-4"
-        >
-          <p className="text-muted-foreground text-sm">
-            Página {movementsPage.page} de {totalPages} · {movementsPage.total} movimientos
-          </p>
-          <div className="flex gap-2">
-            <PageLink
-              href={pageHref(movementsPage.page - 1)}
-              disabled={movementsPage.page <= 1}
-            >
-              Anterior
-            </PageLink>
-            <PageLink
-              href={pageHref(movementsPage.page + 1)}
-              disabled={movementsPage.page >= totalPages}
-            >
-              Siguiente
-            </PageLink>
-          </div>
-        </nav>
-      ) : null}
+      <PaginationNav
+        ariaLabel="Paginación del libro de caja"
+        itemsLabel="movimientos"
+        page={movementsPage.page}
+        totalPages={totalPages}
+        total={movementsPage.total}
+        pageHref={pageHref}
+      />
     </div>
   );
 }

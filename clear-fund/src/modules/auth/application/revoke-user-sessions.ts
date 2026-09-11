@@ -1,4 +1,4 @@
-import { auth } from "@/lib/auth";
+import { auth, type RequestContext } from "@/lib/auth";
 import { buildChangeSet } from "@/modules/audit/domain/rules";
 
 import { AuthError, F01_ERROR_CODES, mapBetterAuthError } from "../domain/errors";
@@ -12,7 +12,6 @@ import {
   recordUserEvent,
   resolveAuditActor,
 } from "./audit";
-import type { RequestContext } from "./context";
 
 export interface RevokeResult {
   success: boolean;

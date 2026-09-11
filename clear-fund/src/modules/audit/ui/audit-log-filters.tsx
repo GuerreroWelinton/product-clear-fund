@@ -1,8 +1,10 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { useRouter } from "next/navigation";
 
 import { Label } from "@/components/ui/label";
+import { Select } from "@/components/ui/select";
+import { useFilterQuery } from "@/hooks/use-filter-query";
 import {
   AUDIT_ACTION_LABELS,
   type AuditAction,
@@ -32,30 +34,20 @@ export function AuditLogFilters({
   selectedAction,
 }: AuditLogFiltersProps) {
   const router = useRouter();
-  const searchParams = useSearchParams();
+  const applyFilterParam = useFilterQuery();
 
   function apply(key: string, value: string) {
-    const params = new URLSearchParams(searchParams.toString());
-    if (value === "") {
-      params.delete(key);
-    } else {
-      params.set(key, value);
-    }
-    // Any filter change invalidates the current page number.
-    params.delete("page");
-    router.push(params.size > 0 ? `/audit?${params.toString()}` : "/audit");
+    const query = applyFilterParam(key, value);
+    router.push(query ? `/audit?${query}` : "/audit");
   }
-
-  const selectClass =
-    "border-input bg-background h-9 w-full rounded-full border px-3 text-sm sm:w-56";
 
   return (
     <div className="flex flex-col gap-3 sm:flex-row sm:items-end">
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="audit-fund-filter">Caja</Label>
-        <select
+        <Select
           id="audit-fund-filter"
-          className={selectClass}
+          className="sm:w-56"
           value={selectedCashFundId}
           onChange={(event) => apply("cashFundId", event.target.value)}
         >
@@ -69,14 +61,14 @@ export function AuditLogFilters({
               {fund.name}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
 
       <div className="flex flex-col gap-1.5">
         <Label htmlFor="audit-action-filter">Acción</Label>
-        <select
+        <Select
           id="audit-action-filter"
-          className={selectClass}
+          className="sm:w-56"
           value={selectedAction}
           onChange={(event) => apply("action", event.target.value)}
         >
@@ -86,7 +78,7 @@ export function AuditLogFilters({
               {label}
             </option>
           ))}
-        </select>
+        </Select>
       </div>
     </div>
   );

@@ -1,3 +1,4 @@
+import type { RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { buildCreationChangeSet } from "@/modules/audit/domain/rules";
 
@@ -11,7 +12,6 @@ import {
   recordCashFundEvent,
 } from "./audit";
 import { requireSuperAdmin } from "./authorize";
-import type { RequestContext } from "./context";
 
 // FR-F02-001 / BR-F02-001/002: only a Super Admin creates a cash fund; it
 // always starts in DRAFT so its structural config can still be adjusted

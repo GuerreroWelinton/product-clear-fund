@@ -1,3 +1,5 @@
+import { createUnexpectedErrorMapper } from "@/lib/actions";
+
 // Stable, F02-prefixed error codes for the cash-fund-lifecycle feature. This
 // is the contract the UI and API layers depend on; callers never couple to
 // Prisma error shapes or internal exception types.
@@ -32,13 +34,8 @@ export class CashFundError extends Error {
 // Funnel for unexpected failures (Prisma errors, etc.) so callers only ever
 // see stable F02 codes; a CashFundError raised deliberately passes through
 // untouched.
-export function mapUnexpectedError(error: unknown): CashFundError {
-  if (error instanceof CashFundError) {
-    return error;
-  }
-  return new CashFundError(
-    F02_ERROR_CODES.OPERATION_FAILED,
-    error instanceof Error ? error.message : "Cash fund operation failed",
-    { cause: error },
-  );
-}
+export const mapUnexpectedError = createUnexpectedErrorMapper(
+  CashFundError,
+  F02_ERROR_CODES.OPERATION_FAILED,
+  "Cash fund operation failed",
+);

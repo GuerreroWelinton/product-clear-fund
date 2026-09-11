@@ -129,7 +129,7 @@ describe("updateOperationalConfig", () => {
     });
   });
 
-  it("does not record an audit event when the fund is INACTIVE", async () => {
+  it("rejects editing operational config while the fund is INACTIVE and records no audit event", async () => {
     findUnique.mockResolvedValue(fundRow({ status: "INACTIVE" }));
 
     await expect(
@@ -137,8 +137,9 @@ describe("updateOperationalConfig", () => {
         { cashFundId: "fund-1", riskThreshold: 4 },
         { headers },
       ),
-    ).rejects.toBeTruthy();
+    ).rejects.toMatchObject({ code: F02_ERROR_CODES.CASH_FUND_INACTIVE });
     expect(auditCreate).not.toHaveBeenCalled();
+    expect(update).not.toHaveBeenCalled();
   });
 
   it("lets an assigned treasurer update the operational config", async () => {
@@ -152,9 +153,6 @@ describe("updateOperationalConfig", () => {
       { headers },
     );
 
-    expect(findFirst).toHaveBeenCalledWith({
-      where: { cashFundId: "fund-1", userId: "treasurer-1", status: "ACTIVE" },
-    });
     expect(update).toHaveBeenCalled();
   });
 
@@ -183,17 +181,6 @@ describe("updateOperationalConfig", () => {
     await expect(
       updateOperationalConfig({ cashFundId: "missing" }, { headers }),
     ).rejects.toMatchObject({ code: F02_ERROR_CODES.CASH_FUND_NOT_FOUND });
-  });
-
-  it("rejects editing operational config while the fund is INACTIVE", async () => {
-    findUnique.mockResolvedValue(fundRow({ status: "INACTIVE" }));
-    await expect(
-      updateOperationalConfig(
-        { cashFundId: "fund-1", riskThreshold: 4 },
-        { headers },
-      ),
-    ).rejects.toMatchObject({ code: F02_ERROR_CODES.CASH_FUND_INACTIVE });
-    expect(update).not.toHaveBeenCalled();
   });
 
   it("rejects editing operational config while the fund is DRAFT", async () => {

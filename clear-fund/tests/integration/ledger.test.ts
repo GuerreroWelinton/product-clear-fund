@@ -49,6 +49,7 @@ async function insertMovement(params: {
   actorId: string;
   actorEmail: string;
   actorRole: string;
+  occurredAt?: Date;
 }) {
   return prisma.cashMovement.create({
     data: {
@@ -61,6 +62,7 @@ async function insertMovement(params: {
       actorId: params.actorId,
       actorEmail: params.actorEmail,
       actorRole: params.actorRole,
+      ...(params.occurredAt ? { occurredAt: params.occurredAt } : {}),
     },
   });
 }
@@ -177,7 +179,44 @@ describe("F20 cash ledger and balances (integration)", () => {
 
     const ownPage = await listCashMovements({ cashFundId: fundA.id }, treasurerCtx);
     expect(ownPage.movements.every((m) => m.cashFundId === fundA.id)).toBe(true);
-    expect(ownPage.movements.some((m) => m.amount === "999")).toBe(false);
+    expect(ownPage.total).toBe(1);
+  });
+
+  // ADR-014 §5 / TECHNICAL_CONVENTIONS.md:35 — the ledger's day filter runs
+  // in the business timezone (America/Guayaquil, UTC-5), not UTC. A movement
+  // stored at 2026-07-01T01:00:00Z is local 2026-06-30 20:00, so filtering
+  // with toDate=2026-06-30 must still return it; a movement stored just a
+  // few hours later, at 2026-07-01T06:00:00Z (local 2026-07-01 01:00), must
+  // not.
+  it("includes a late-evening movement stored on the next UTC day when filtering by business day", async () => {
+    const ctx = await adminContext();
+    const fund = await activeFund(ctx);
+
+    const lateEveningMovement = await insertMovement({
+      cashFundId: fund.id,
+      direction: "IN",
+      amount: "20.00",
+      actorId: "admin-1",
+      actorEmail: ADMIN.email,
+      actorRole: "SUPER_ADMIN",
+      occurredAt: new Date("2026-07-01T01:00:00.000Z"),
+    });
+    await insertMovement({
+      cashFundId: fund.id,
+      direction: "IN",
+      amount: "30.00",
+      actorId: "admin-1",
+      actorEmail: ADMIN.email,
+      actorRole: "SUPER_ADMIN",
+      occurredAt: new Date("2026-07-01T06:00:00.000Z"),
+    });
+
+    const page = await listCashMovements(
+      { cashFundId: fund.id, toDate: "2026-06-30" },
+      ctx,
+    );
+
+    expect(page.movements.map((m) => m.id)).toEqual([lateEveningMovement.id]);
   });
 
   // DB-level immutability: the trigger guards the real Prisma client, not

@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
+
+import { requestContext } from "@/lib/auth";
+import type { ActionResult } from "@/lib/actions";
 
 import { CashFundError, type CashFundErrorCode } from "../domain/errors";
 import type {
@@ -19,9 +21,7 @@ import {
   updateOperationalConfig,
 } from ".";
 
-export type ActionResult =
-  | { ok: true }
-  | { ok: false; code: string; message: string };
+export type { ActionResult } from "@/lib/actions";
 
 // User-facing Spanish copy per stable F02 code. Internals never surface.
 const MESSAGES: Record<CashFundErrorCode, string> = {
@@ -47,10 +47,6 @@ function toFailure(error: unknown): ActionResult {
     code: "F02_OPERATION_FAILED",
     message: MESSAGES.F02_OPERATION_FAILED,
   };
-}
-
-async function requestContext() {
-  return { headers: await headers() };
 }
 
 export async function createCashFundAction(

@@ -1,3 +1,4 @@
+import type { RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 
 import {
@@ -9,7 +10,6 @@ import type { CashFundBalanceDto } from "../domain/dto";
 import { F20_ERROR_CODES, LedgerError, mapUnexpectedError } from "../domain/errors";
 import { getCashFundBalanceSchema, type GetCashFundBalanceInput } from "../schemas";
 import { requireSuperAdminOrAssignedTreasurer } from "./authorize";
-import type { RequestContext } from "./context";
 
 // Prisma's aggregate returns `_sum.amount === null` when no row matches
 // (empty ledger, day one per ADR-014). decimal.js throws on null, so this

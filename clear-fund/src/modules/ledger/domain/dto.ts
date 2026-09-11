@@ -1,5 +1,7 @@
 // Output DTOs: use cases return these, never raw Prisma rows. Money is always
 // a decimal string.
+import { toMoneyString } from "@/lib/money";
+
 import type { CashMovementDirection } from "./movement-types";
 
 export interface CashMovementDto {
@@ -42,7 +44,7 @@ export function toCashMovementDto(row: CashMovementLike): CashMovementDto {
     id: row.id,
     cashFundId: row.cashFundId,
     direction: row.direction as CashMovementDirection,
-    amount: row.amount.toString(),
+    amount: toMoneyString(row.amount.toString()),
     movementType: row.movementType,
     sourceType: row.sourceType,
     sourceId: row.sourceId,
@@ -72,4 +74,11 @@ export interface CashFundBalanceDto {
   accountingBalance: string;
   committedBalance: string;
   freeBalance: string;
+}
+
+// The ledger page header (finding 1, pass 2): just enough to name the fund,
+// nothing structural — that belongs to cash-funds/application's own DTO.
+export interface CashFundHeaderDto {
+  cashFundId: string;
+  name: string;
 }

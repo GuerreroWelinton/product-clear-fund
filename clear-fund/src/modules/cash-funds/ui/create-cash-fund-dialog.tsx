@@ -18,13 +18,9 @@ import {
 import { FieldLabel } from "@/components/ui/field-label";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { MONEY_PATTERN } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { createCashFundAction } from "@/modules/cash-funds/application/actions";
-
-// Money crosses the module boundary as a decimal string (max 2 decimals);
-// mirror the same client-side check the schema enforces server-side so users
-// get instant feedback instead of a round trip.
-const MONEY_PATTERN = /^\d+(\.\d{1,2})?$/;
 
 export function CreateCashFundDialog() {
   const router = useRouter();

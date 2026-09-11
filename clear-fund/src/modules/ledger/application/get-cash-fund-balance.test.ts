@@ -1,3 +1,4 @@
+import { Decimal } from "decimal.js";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 const { getSession, findFirstAssignment, findUniqueFund, aggregate } =
@@ -101,10 +102,10 @@ describe("getCashFundBalance", () => {
 
     const balance = await getCashFundBalance({ cashFundId: FUND_ID }, { headers });
 
+    const expectedFreeBalance = new Decimal("500.00").minus("0.00").toFixed(2);
+
     expect(balance.accountingBalance).toBe("500.00");
     expect(balance.committedBalance).toBe("0.00");
-    expect(balance.freeBalance).toBe(
-      (Number(balance.accountingBalance) - Number(balance.committedBalance)).toFixed(2),
-    );
+    expect(balance.freeBalance).toBe(expectedFreeBalance);
   });
 });

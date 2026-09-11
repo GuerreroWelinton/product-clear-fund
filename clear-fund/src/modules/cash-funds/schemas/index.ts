@@ -1,16 +1,17 @@
 import { z } from "zod";
 
+import { isoDateSchema } from "@/lib/dates";
+import { MONEY_PATTERN } from "@/lib/money";
+
 // Money crosses the module boundary as a decimal string (max 2 decimals) to
 // avoid floating point drift; domain rules re-validate it is strictly > 0.
-const moneyString = z
-  .string()
-  .regex(/^\d+(\.\d{1,2})?$/, "Invalid amount");
+const moneyString = z.string().regex(MONEY_PATTERN, "Invalid amount");
 
 // Structural/operational config values are whole days/months/counts.
 const dayOrCount = z.number().int();
 
 // ISO calendar date (YYYY-MM-DD); parsed to a Date at the Prisma boundary.
-const isoDate = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date");
+const isoDate = isoDateSchema;
 
 export const createCashFundSchema = z.object({
   name: z.string().min(1).max(120),

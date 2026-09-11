@@ -53,7 +53,8 @@ export function cashFundAuditSnapshot(
     logoKey: fund.logoKey,
     phrase: fund.phrase,
     currency: fund.currency,
-    // Decimal: toAuditValue turns it into a decimal string, never a number.
+    // Decimal: toAuditValue turns it into a two-decimal string ("50.00"),
+    // never a number and never an unpadded string like "50".
     monthlySavingAmount: fund.monthlySavingAmount,
     officialStartDate: fund.officialStartDate,
     status: fund.status,

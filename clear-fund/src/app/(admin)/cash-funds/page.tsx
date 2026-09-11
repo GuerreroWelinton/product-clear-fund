@@ -11,10 +11,11 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { auth, ROLES } from "@/lib/auth";
-import { prisma } from "@/lib/db";
+import { formatMoneyDisplay } from "@/lib/money";
+import { listCashFunds } from "@/modules/cash-funds/application";
 import { CashFundRowActions } from "@/modules/cash-funds/ui/cash-fund-row-actions";
 import { CreateCashFundDialog } from "@/modules/cash-funds/ui/create-cash-fund-dialog";
-import { toCashFundDto, type CashFundStatus } from "@/modules/cash-funds/domain/dto";
+import type { CashFundStatus } from "@/modules/cash-funds/domain/dto";
 import { listAssignedCashFunds } from "@/modules/treasurer-assignments/application";
 
 const STATUS_LABELS: Record<CashFundStatus, string> = {
@@ -31,19 +32,6 @@ const STATUS_VARIANTS: Record<
   ACTIVE: "default",
   INACTIVE: "destructive",
 };
-
-const currencyFormatter = new Intl.NumberFormat("es-EC", {
-  style: "currency",
-  currency: "USD",
-});
-
-function formatAmount(amount: string, currency: string): string {
-  const value = Number(amount);
-  if (currency === "USD") {
-    return currencyFormatter.format(value);
-  }
-  return `${value.toFixed(2)} ${currency}`;
-}
 
 export default async function CashFundsPage() {
   const requestHeaders = await headers();
@@ -65,11 +53,10 @@ export default async function CashFundsPage() {
     );
   }
 
-  const rows = await prisma.cashFund.findMany({
-    where: isSuperAdmin ? undefined : { id: { in: [...assignedFundIds] } },
-    orderBy: { createdAt: "desc" },
-  });
-  const funds = rows.map(toCashFundDto);
+  // ARCHITECTURE.md: pages call use cases, never Prisma directly — the
+  // fund-visibility rule itself lives in lib/permissions, resolved once
+  // inside listCashFunds (single source of truth, finding 1).
+  const funds = await listCashFunds({ headers: requestHeaders });
 
   return (
     <div className="flex flex-col gap-6">
@@ -115,7 +102,7 @@ export default async function CashFundsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {formatAmount(fund.monthlySavingAmount, fund.currency)}
+                    {formatMoneyDisplay(fund.monthlySavingAmount, fund.currency)}
                   </TableCell>
                   <TableCell>{fund.currency}</TableCell>
                   <TableCell>

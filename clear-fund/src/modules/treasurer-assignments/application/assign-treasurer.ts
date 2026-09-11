@@ -1,4 +1,4 @@
-import { ROLES } from "@/lib/auth";
+import { ROLES, type RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 import { AUDIT_ACTIONS, AUDIT_ENTITY_TYPES } from "@/modules/audit/domain/event-types";
 import {
@@ -17,7 +17,6 @@ import { AssignmentError, F03_ERROR_CODES, mapUnexpectedError } from "../domain/
 import { resolveAssignAction } from "../domain/rules";
 import { assignTreasurerSchema, type AssignTreasurerInput } from "../schemas";
 import { requireSuperAdmin } from "./authorize";
-import type { RequestContext } from "./context";
 
 // Prisma raises a P2002 known-request error when a unique constraint is
 // violated. Detected structurally so this module stays decoupled from the

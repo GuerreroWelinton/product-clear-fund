@@ -1,9 +1,11 @@
 import { z } from "zod";
 
-// Page size is capped so a caller cannot ask for the whole log in one request;
-// the audit trail is append-only and grows without bound.
-export const AUDIT_PAGE_SIZE_MAX = 100;
-export const AUDIT_PAGE_SIZE_DEFAULT = 25;
+import { PAGE_SIZE_DEFAULT, PAGE_SIZE_MAX } from "@/lib/pagination";
+
+// Sourced from the shared cap (src/lib/pagination): the audit trail is one of
+// the two append-only tables that limit applies to.
+export const AUDIT_PAGE_SIZE_MAX = PAGE_SIZE_MAX;
+export const AUDIT_PAGE_SIZE_DEFAULT = PAGE_SIZE_DEFAULT;
 
 // FR-F23-001 / FR-F23-002: the global log, or one fund's log. `cashFundId`
 // absent means "everything the caller may see"; a Super Admin gets global

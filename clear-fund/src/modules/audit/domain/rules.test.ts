@@ -51,7 +51,7 @@ describe("toAuditValue", () => {
 
   it("serializes a Decimal as a decimal string, never a number", () => {
     const value = toAuditValue(new Decimal("25.50"));
-    expect(value).toBe("25.5");
+    expect(value).toBe("25.50");
     expect(typeof value).toBe("string");
   });
 
@@ -96,8 +96,8 @@ describe("buildChangeSet (BR-F23-002)", () => {
       { monthlySavingAmount: new Decimal("30.00") },
     );
     expect(changed.monthlySavingAmount).toEqual({
-      previous: "25",
-      next: "30",
+      previous: "25.00",
+      next: "30.00",
     });
   });
 

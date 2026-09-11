@@ -1,7 +1,9 @@
 "use server";
 
 import { revalidatePath } from "next/cache";
-import { headers } from "next/headers";
+
+import { requestContext } from "@/lib/auth";
+import type { ActionResult } from "@/lib/actions";
 
 import { AuthError, type AuthErrorCode } from "../domain/errors";
 import {
@@ -11,9 +13,7 @@ import {
   revokeUserSessions,
 } from ".";
 
-export type ActionResult =
-  | { ok: true }
-  | { ok: false; code: string; message: string };
+export type { ActionResult } from "@/lib/actions";
 
 // User-facing Spanish copy per stable F01 code. Internals never surface.
 const MESSAGES: Record<AuthErrorCode, string> = {
@@ -34,10 +34,6 @@ function toFailure(error: unknown): ActionResult {
     code: "F01_OPERATION_FAILED",
     message: MESSAGES.F01_OPERATION_FAILED,
   };
-}
-
-async function requestContext() {
-  return { headers: await headers() };
 }
 
 export async function createTreasurerAction(input: {

@@ -1,3 +1,5 @@
+import { z } from "zod";
+
 /**
  * Calendar-day boundaries in the business timezone.
  *
@@ -6,6 +8,10 @@
  * against the process timezone — moves late-evening rows into the next day.
  */
 export const BUSINESS_TIME_ZONE = "America/Guayaquil";
+
+// ISO calendar date (YYYY-MM-DD), shared by every schema that accepts a
+// date-only string.
+export const isoDateSchema = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Invalid date");
 
 const wallClockParts = new Intl.DateTimeFormat("en-US", {
   timeZone: BUSINESS_TIME_ZONE,

@@ -8,7 +8,7 @@
 // appended immediately AFTER the Better Auth call succeeds, and a failure to
 // append it propagates: a noisy failure the operator can reconcile beats a silent
 // hole in the audit trail (ADR-013, section 6).
-import { auth } from "@/lib/auth";
+import { auth, type RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
 // Concrete path, not the module barrel: the barrel pulls in the audit read side,
 // which depends on the treasurer-assignments module (import cycle).
@@ -22,7 +22,6 @@ import {
 } from "@/modules/audit/domain/event-types";
 import type { AuditChangeSet } from "@/modules/audit/domain/rules";
 
-import type { RequestContext } from "./context";
 
 // Only the actions F01 can emit.
 export type UserAuditAction =

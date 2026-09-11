@@ -83,7 +83,7 @@ describe("updateCashFundDraft", () => {
       }),
     });
     expect(dto.name).toBe("Caja Renovada");
-    expect(dto.monthlySavingAmount).toBe("200");
+    expect(dto.monthlySavingAmount).toBe("200.00");
   });
 
   it("updates a DRAFT fund's operational config (maxAdvanceMonths, riskThreshold)", async () => {
@@ -119,7 +119,7 @@ describe("updateCashFundDraft", () => {
     expect(data.action).toBe("CASH_FUND_DRAFT_UPDATED");
     expect(data.changes).toEqual({
       name: { previous: "Caja Los Andes", next: "Caja Renovada" },
-      monthlySavingAmount: { previous: "150", next: "200" },
+      monthlySavingAmount: { previous: "150.00", next: "200.00" },
     });
   });
 

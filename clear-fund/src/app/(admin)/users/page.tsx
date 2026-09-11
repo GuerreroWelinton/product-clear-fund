@@ -11,6 +11,7 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { auth, ROLES } from "@/lib/auth";
+import { listUsers } from "@/modules/auth/application";
 import { CreateTreasurerDialog } from "@/modules/auth/ui/create-treasurer-dialog";
 import { UserRowActions } from "@/modules/auth/ui/user-row-actions";
 
@@ -29,10 +30,7 @@ export default async function UsersPage() {
     redirect("/dashboard");
   }
 
-  const { users } = await auth.api.listUsers({
-    query: { limit: 200, sortBy: "createdAt", sortDirection: "desc" },
-    headers: requestHeaders,
-  });
+  const users = await listUsers({ headers: requestHeaders });
 
   return (
     <div className="flex flex-col gap-6">

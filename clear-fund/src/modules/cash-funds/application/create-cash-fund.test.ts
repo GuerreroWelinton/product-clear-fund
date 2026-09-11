@@ -88,7 +88,7 @@ describe("createCashFund", () => {
     expect(dto).toMatchObject({
       id: "fund-1",
       status: "DRAFT",
-      monthlySavingAmount: "150",
+      monthlySavingAmount: "150.00",
     });
     expect(typeof dto.monthlySavingAmount).toBe("string");
   });
@@ -111,7 +111,7 @@ describe("createCashFund", () => {
     // Money reaches the log as a decimal string, never a number.
     expect(data.changes.monthlySavingAmount).toEqual({
       previous: null,
-      next: "150",
+      next: "150.00",
     });
   });
 
