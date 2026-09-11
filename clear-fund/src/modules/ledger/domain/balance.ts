@@ -2,18 +2,16 @@
 // boundary as a decimal string; arithmetic uses decimal.js, never number.
 import { Decimal } from "decimal.js";
 
-import { F20_ERROR_CODES, LedgerError } from "./errors";
+import { toMoneyString } from "@/lib/money";
 
-function normalize(value: Decimal): string {
-  return value.toDecimalPlaces(2, Decimal.ROUND_HALF_UP).toFixed(2);
-}
+import { F20_ERROR_CODES, LedgerError } from "./errors";
 
 // saldo_contable = suma(entradas confirmadas) - suma(salidas confirmadas)
 export function deriveAccountingBalance(params: {
   totalIn: string;
   totalOut: string;
 }): string {
-  return normalize(new Decimal(params.totalIn).minus(params.totalOut));
+  return toMoneyString(new Decimal(params.totalIn).minus(params.totalOut));
 }
 
 // saldo_comprometido = suma(préstamos en desembolso en proceso).
@@ -27,7 +25,7 @@ export function deriveCommittedBalance(
     (sum, loan) => sum.plus(loan.principalAmount),
     new Decimal(0),
   );
-  return normalize(total);
+  return toMoneyString(total);
 }
 
 // saldo_libre = saldo_contable - saldo_comprometido
@@ -35,7 +33,7 @@ export function deriveFreeBalance(params: {
   accountingBalance: string;
   committedBalance: string;
 }): string {
-  return normalize(
+  return toMoneyString(
     new Decimal(params.accountingBalance).minus(params.committedBalance),
   );
 }

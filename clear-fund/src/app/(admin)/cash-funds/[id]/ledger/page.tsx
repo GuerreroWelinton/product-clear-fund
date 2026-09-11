@@ -16,6 +16,7 @@ import {
 import { auth } from "@/lib/auth";
 import { BUSINESS_TIME_ZONE } from "@/lib/dates";
 import { prisma } from "@/lib/db";
+import { formatMoneyDisplay } from "@/lib/money";
 import { cn } from "@/lib/utils";
 import { getCashFundBalance, listCashMovements } from "@/modules/ledger/application";
 import { F20_ERROR_CODES, LedgerError } from "@/modules/ledger/domain/errors";
@@ -25,25 +26,12 @@ import {
 } from "@/modules/ledger/domain/movement-types";
 import { LedgerFilters } from "@/modules/ledger/ui/ledger-filters";
 
-const currencyFormatter = new Intl.NumberFormat("es-EC", {
-  style: "currency",
-  currency: "USD",
-});
-
 const dateTimeFormatter = new Intl.DateTimeFormat("es-EC", {
   dateStyle: "short",
   timeStyle: "short",
   // Same zone the date filters resolve in; timestamps are stored UTC.
   timeZone: BUSINESS_TIME_ZONE,
 });
-
-function formatAmount(amount: string, currency: string): string {
-  const value = Number(amount);
-  if (currency === "USD") {
-    return currencyFormatter.format(value);
-  }
-  return `${value.toFixed(2)} ${currency}`;
-}
 
 // A pagination control (mirrors /audit's PageLink): a plain anchor wearing
 // button styles, not Button+Link, so paginating keeps link semantics.
@@ -213,7 +201,7 @@ export default async function CashFundLedgerPage({
             <CardTitle>Saldo contable</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-medium">
-            {formatAmount(balance.accountingBalance, balance.currency)}
+            {formatMoneyDisplay(balance.accountingBalance, balance.currency)}
           </CardContent>
         </Card>
         <Card>
@@ -221,7 +209,7 @@ export default async function CashFundLedgerPage({
             <CardTitle>Saldo comprometido</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-medium">
-            {formatAmount(balance.committedBalance, balance.currency)}
+            {formatMoneyDisplay(balance.committedBalance, balance.currency)}
           </CardContent>
         </Card>
         <Card>
@@ -229,7 +217,7 @@ export default async function CashFundLedgerPage({
             <CardTitle>Saldo libre</CardTitle>
           </CardHeader>
           <CardContent className="text-2xl font-medium">
-            {formatAmount(balance.freeBalance, balance.currency)}
+            {formatMoneyDisplay(balance.freeBalance, balance.currency)}
           </CardContent>
         </Card>
       </div>
@@ -283,7 +271,7 @@ export default async function CashFundLedgerPage({
                   </TableCell>
                   <TableCell className="break-all">{movement.actorEmail}</TableCell>
                   <TableCell className="text-right">
-                    {formatAmount(movement.amount, balance.currency)}
+                    {formatMoneyDisplay(movement.amount, balance.currency)}
                   </TableCell>
                 </TableRow>
               ))

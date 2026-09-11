@@ -59,7 +59,7 @@ describe("listCashMovements", () => {
     expect(page.movements).toHaveLength(1);
     expect(page.movements[0]).toMatchObject({
       id: "movement-1",
-      amount: "100",
+      amount: "100.00",
       direction: "IN",
     });
     expect(typeof page.movements[0]!.amount).toBe("string");

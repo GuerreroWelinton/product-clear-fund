@@ -1,5 +1,6 @@
 // Pure business rules for the audit-log feature (F23). No Prisma, no Next.js,
 // no I/O — fully unit-testable in isolation.
+import { toMoneyString, type DecimalLike } from "@/lib/money";
 
 // A single JSON-safe audit value. Decimals and Dates are normalized to strings
 // before they ever reach this type (see toAuditValue).
@@ -42,7 +43,7 @@ export function isSensitiveField(field: string): boolean {
 // Anything Decimal-like: Prisma's Decimal and decimal.js both expose toFixed.
 // Money must reach the audit log as a decimal STRING, never a JS number
 // (TECHNICAL_CONVENTIONS.md).
-function isDecimalLike(value: object): value is { toFixed(dp?: number): string } {
+function isDecimalLike(value: object): value is DecimalLike {
   return "toFixed" in value && typeof value.toFixed === "function";
 }
 
@@ -58,7 +59,11 @@ export function toAuditValue(value: unknown): AuditValue {
   }
   if (typeof value === "object") {
     if (isDecimalLike(value)) {
-      return value.toString();
+      // Explicit two-decimal serialization (TECHNICAL_CONVENTIONS.md), the
+      // guard already narrowed to the method that gives us this: toFixed(2),
+      // not toString() (which drops trailing zeros, e.g. "50" instead of
+      // "50.00").
+      return toMoneyString(value);
     }
     // Arrays / nested objects are not part of any audited write today. Encoding
     // them as JSON keeps the log honest instead of storing "[object Object]".

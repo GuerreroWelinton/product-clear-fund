@@ -1,5 +1,7 @@
 // Output DTOs: use cases return these, never raw Prisma rows. Money is always
 // a decimal string.
+import { toMoneyString } from "@/lib/money";
+
 import type { CashMovementDirection } from "./movement-types";
 
 export interface CashMovementDto {
@@ -42,7 +44,7 @@ export function toCashMovementDto(row: CashMovementLike): CashMovementDto {
     id: row.id,
     cashFundId: row.cashFundId,
     direction: row.direction as CashMovementDirection,
-    amount: row.amount.toString(),
+    amount: toMoneyString(row.amount.toString()),
     movementType: row.movementType,
     sourceType: row.sourceType,
     sourceId: row.sourceId,

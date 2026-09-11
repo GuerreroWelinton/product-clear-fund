@@ -12,6 +12,7 @@ import {
 } from "@/components/ui/table";
 import { auth, ROLES } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { formatMoneyDisplay } from "@/lib/money";
 import { CashFundRowActions } from "@/modules/cash-funds/ui/cash-fund-row-actions";
 import { CreateCashFundDialog } from "@/modules/cash-funds/ui/create-cash-fund-dialog";
 import { toCashFundDto, type CashFundStatus } from "@/modules/cash-funds/domain/dto";
@@ -31,19 +32,6 @@ const STATUS_VARIANTS: Record<
   ACTIVE: "default",
   INACTIVE: "destructive",
 };
-
-const currencyFormatter = new Intl.NumberFormat("es-EC", {
-  style: "currency",
-  currency: "USD",
-});
-
-function formatAmount(amount: string, currency: string): string {
-  const value = Number(amount);
-  if (currency === "USD") {
-    return currencyFormatter.format(value);
-  }
-  return `${value.toFixed(2)} ${currency}`;
-}
 
 export default async function CashFundsPage() {
   const requestHeaders = await headers();
@@ -115,7 +103,7 @@ export default async function CashFundsPage() {
                     </Badge>
                   </TableCell>
                   <TableCell>
-                    {formatAmount(fund.monthlySavingAmount, fund.currency)}
+                    {formatMoneyDisplay(fund.monthlySavingAmount, fund.currency)}
                   </TableCell>
                   <TableCell>{fund.currency}</TableCell>
                   <TableCell>

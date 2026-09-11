@@ -2,6 +2,8 @@
 // rows so the module boundary never leaks Prisma's Decimal type or internal
 // shape (BR-F02-001). Money is always a decimal STRING, never a number, to
 // avoid floating point drift.
+import { toMoneyString } from "@/lib/money";
+
 export type CashFundStatus = "DRAFT" | "ACTIVE" | "INACTIVE";
 
 export interface CashFundDto {
@@ -61,7 +63,7 @@ export function toCashFundDto(row: CashFundLike): CashFundDto {
     logoKey: row.logoKey ?? null,
     phrase: row.phrase ?? null,
     currency: row.currency,
-    monthlySavingAmount: row.monthlySavingAmount.toString(),
+    monthlySavingAmount: toMoneyString(row.monthlySavingAmount.toString()),
     officialStartDate: toIso(row.officialStartDate),
     status: row.status as CashFundStatus,
     nextMemberNumber: row.nextMemberNumber,
