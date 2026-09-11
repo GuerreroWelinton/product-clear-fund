@@ -1,13 +1,14 @@
 import { z } from "zod";
 
 import { isoDateSchema } from "@/lib/dates";
+import { PAGE_SIZE_DEFAULT, PAGE_SIZE_MAX } from "@/lib/pagination";
 
 import { CASH_MOVEMENT_DIRECTIONS } from "../domain/movement-types";
 
-// Page size is capped so a caller cannot ask for the whole ledger in one
-// request; the ledger is append-only and grows without bound.
-export const LEDGER_PAGE_SIZE_MAX = 100;
-export const LEDGER_PAGE_SIZE_DEFAULT = 25;
+// Sourced from the shared cap (src/lib/pagination): the ledger is one of the
+// two append-only tables that limit applies to.
+export const LEDGER_PAGE_SIZE_MAX = PAGE_SIZE_MAX;
+export const LEDGER_PAGE_SIZE_DEFAULT = PAGE_SIZE_DEFAULT;
 
 // ISO calendar date (YYYY-MM-DD); occurredAt filtering happens at day
 // boundaries, not exact instants.
