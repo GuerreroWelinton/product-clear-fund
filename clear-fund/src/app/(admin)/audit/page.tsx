@@ -19,7 +19,6 @@ import {
 } from "@/components/ui/table";
 import { auth, ROLES } from "@/lib/auth";
 import { BUSINESS_TIME_ZONE } from "@/lib/dates";
-import { prisma } from "@/lib/db";
 import { listAuditEvents } from "@/modules/audit/application/list-audit-events";
 import { AuditError } from "@/modules/audit/domain/errors";
 import {
@@ -28,7 +27,7 @@ import {
 } from "@/modules/audit/domain/event-types";
 import { AuditEventRowActions } from "@/modules/audit/ui/audit-event-row-actions";
 import { AuditLogFilters } from "@/modules/audit/ui/audit-log-filters";
-import { listAssignedCashFunds } from "@/modules/treasurer-assignments/application/list-assigned-cash-funds";
+import { listCashFunds } from "@/modules/cash-funds/application";
 
 const dateTimeFormatter = new Intl.DateTimeFormat("es-EC", {
   dateStyle: "short",
@@ -64,15 +63,13 @@ export default async function AuditPage({
   const isSuperAdmin = session.user.role === ROLES.SUPER_ADMIN;
 
   // Funds available in the filter: all of them for a Super Admin, the assigned
-  // ones for a treasurer (F03 owns that query).
-  const visibleFundIds = isSuperAdmin
-    ? null
-    : await listAssignedCashFunds({ headers: requestHeaders });
-  const funds = await prisma.cashFund.findMany({
-    where: visibleFundIds === null ? undefined : { id: { in: visibleFundIds } },
-    select: { id: true, name: true },
-    orderBy: { name: "asc" },
-  });
+  // ones for a treasurer. listCashFunds owns that visibility rule (F03 +
+  // lib/permissions, single source of truth) — this page only picks the
+  // id/name pair the dropdown needs and sorts it for display.
+  const visibleFunds = await listCashFunds({ headers: requestHeaders });
+  const funds = visibleFunds
+    .map((fund) => ({ id: fund.id, name: fund.name }))
+    .sort((a, b) => a.name.localeCompare(b.name));
   const fundNames = new Map(funds.map((fund) => [fund.id, fund.name]));
 
   let result: Awaited<ReturnType<typeof listAuditEvents>> | null = null;

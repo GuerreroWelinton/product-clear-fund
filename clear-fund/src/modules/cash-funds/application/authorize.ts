@@ -1,5 +1,9 @@
 import { auth, ROLES, type RequestContext } from "@/lib/auth";
 import { prisma } from "@/lib/db";
+import { resolveCashFundVisibility, type CashFundVisibility } from "@/lib/permissions";
+// Concrete path, not the module barrel: mirrors the cycle-avoidance already
+// used by audit/application/authorize.ts for the same import.
+import { listAssignedCashFunds } from "@/modules/treasurer-assignments/application/list-assigned-cash-funds";
 
 import { CashFundError, F02_ERROR_CODES } from "../domain/errors";
 
@@ -47,4 +51,32 @@ export async function requireSuperAdminOrAssignedTreasurer(
     );
   }
   return session;
+}
+
+// FR-F02-004 / FR-F03-002: which cash funds an authenticated caller may list.
+// Fund visibility is NOT reimplemented here — it is resolved once via
+// lib/permissions and F03's listAssignedCashFunds (single source of truth),
+// the same way audit/application/authorize.ts resolves its own read scope.
+export async function resolveVisibilityForCaller(
+  ctx: RequestContext,
+): Promise<{ session: NonNullable<Session>; visibility: CashFundVisibility }> {
+  const session = await auth.api.getSession({ headers: ctx.headers });
+  if (!session) {
+    throw new CashFundError(
+      F02_ERROR_CODES.UNAUTHORIZED,
+      "Authentication required",
+    );
+  }
+
+  const isSuperAdmin = session.user.role === ROLES.SUPER_ADMIN;
+  const assignedCashFundIds = isSuperAdmin
+    ? []
+    : await listAssignedCashFunds(ctx);
+
+  const visibility = resolveCashFundVisibility({
+    isSuperAdmin,
+    assignedCashFundIds,
+  });
+
+  return { session, visibility };
 }
